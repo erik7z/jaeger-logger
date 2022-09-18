@@ -1,3 +1,4 @@
 # GLB Logger #
 
-Just logs whatever you want :)
+Just logs whatever you want)
+
