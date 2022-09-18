@@ -16,12 +16,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "type": "module",
-  "version": "1.0.2",
+  "version": "1.0.3",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
   "keywords": [
-    "github",
-    "repos",
-    "repositories",
-    "sort",
-    "stars"
+    "gemlightbox",
+    "logger",
+    "tracer"
   ]
 }
