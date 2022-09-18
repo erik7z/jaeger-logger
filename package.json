@@ -1,0 +1,27 @@
+{
+  "author": "erik7z_digis",
+  "bugs": {
+    "url": "https://bitbucket.org/erik7z_digis/glb-logger/issues"
+  },
+  "description": "Logger library for GemlightBox projects",
+  "homepage": "https://bitbucket.org/erik7z_digis/glb-logger#readme",
+  "license": "ISC",
+  "main": "index.js",
+  "name": "glb-logger",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/erik7z_digis/glb-logger.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "version": "1.0.0",
+  "keywords": [
+    "github",
+    "repos",
+    "repositories",
+    "sort",
+    "stars"
+  ]
+}
