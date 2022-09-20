@@ -18,9 +18,9 @@
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
     "lint": "./node_modules/tslint/bin/tslint --fix -c tslint.json src/**/*.ts",
-    "format": "prettier --write \"src/**/*.ts\"",
+    "format": "./node_modules/.bin/prettier --write \"src/**/*.ts\"",
     "build": "./node_modules/typescript/bin/tsc",
-    "test": "jest --config jestconfig.json"
+    "test": "./node_modules/.bin/jest --config jestconfig.json"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
