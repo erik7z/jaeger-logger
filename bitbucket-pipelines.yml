@@ -1,4 +1,4 @@
-image: node:12.18.3
+image: node:18.4.0
 
 pipelines:
   default:
@@ -7,6 +7,7 @@ pipelines:
         script:
           - npm install
           - npm run build
+          - npm run prepublishOnly
     - step:
         name: Publish
         deployment: production
