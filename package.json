@@ -12,15 +12,15 @@
     "url": "git+ssh://git@bitbucket.org/erik7z_digis/glb-logger.git"
   },
   "scripts": {
-    "test": "jest --config jestconfig.json",
-    "build": "./node_modules/typescript/bin/tsc",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "lint": "./node_modules/tslint/bin/tslint --fix -c tslint.json src/**/*.ts",
-    "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
+    "prepare": "npm run build",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "lint": "./node_modules/tslint/bin/tslint --fix -c tslint.json src/**/*.ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "build": "./node_modules/typescript/bin/tsc",
+    "test": "jest --config jestconfig.json"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
