@@ -1,1 +1,1 @@
-export const square = (num: number) => num * num;
+export const square = (num: number) => num * num * num;

@@ -6,6 +6,7 @@ pipelines:
         name: Build
         script:
           - npm install
+          - npm run build
     - step:
         name: Publish
         deployment: production
