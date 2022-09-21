@@ -14,12 +14,12 @@ export declare const defaultConfig: ITracerConfig;
 /**
  * Singleton for returning instance of the Tracer class.
  */
-export declare const getDefaultTracer: () => Tracer;
+export declare const getDefaultTracer: (config?: Partial<ITracerConfig>) => Tracer;
 export default class Tracer {
     readonly client: JaegerTracer;
     readonly config: ITracerConfig;
-    readonly serviceName: string;
-    constructor(optionsConfig: ITracerConfig);
+    readonly serviceName: string | undefined;
+    constructor(optionsConfig: Partial<ITracerConfig>);
     /**
      * Creates a new child span with the given name and parent context,
      * and adds a tag to the span with the service name
