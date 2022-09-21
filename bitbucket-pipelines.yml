@@ -6,7 +6,6 @@ pipelines:
         name: Build
         script:
           - npm install
-          - npm run build
           - npm run prepublishOnly
     - step:
         name: Publish

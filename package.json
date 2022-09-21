@@ -12,8 +12,7 @@
     "url": "git+ssh://git@bitbucket.org/erik7z_digis/glb-logger.git"
   },
   "scripts": {
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint && npm run format",
+    "prepublishOnly": "npm test && npm run lint && npm run format && npm run build",
     "lint": "./node_modules/tslint/bin/tslint --fix -c tslint.json src/**/*.ts",
     "format": "./node_modules/.bin/prettier --write \"src/**/*.ts\"",
     "build": "./node_modules/typescript/bin/tsc",
