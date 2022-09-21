@@ -7,7 +7,6 @@ pipelines:
         script:
           - npm install
           - npm run prepublishOnly
-          - npm run preversion
     - step:
         name: Publish
         deployment: production
