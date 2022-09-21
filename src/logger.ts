@@ -122,6 +122,7 @@ export default class Logger {
   /**
    * Static error logger to use without 'new'
    * logs an error and throws it
+   * @deprecated **uses default config, so tracer will not work**
    */
   public static logError(e: Error, ctx: any | ILogData, serviceName = 'Unknown service'): void {
     const logger = new Logger(serviceName);
@@ -135,7 +136,7 @@ export default class Logger {
    * *don't forget to close this sub logger on completion!*
    */
   public getSubLogger(name: string, parentContext = this.context): Logger {
-    return new Logger(name, { parentContext });
+    return new Logger(name, { parentContext, config: this.config });
   }
 
   /**

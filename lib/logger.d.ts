@@ -49,6 +49,7 @@ export default class Logger {
     /**
      * Static error logger to use without 'new'
      * logs an error and throws it
+     * @deprecated **uses default config, so tracer will not work**
      */
     static logError(e: Error, ctx: any | ILogData, serviceName?: string): void;
     /**
