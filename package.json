@@ -24,7 +24,7 @@
     "lib",
     "src"
   ],
-  "version": "1.2.26",
+  "version": "1.2.27",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
