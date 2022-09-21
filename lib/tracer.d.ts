@@ -1,5 +1,5 @@
-import { JaegerTracer, opentracing } from "jaeger-client";
-import { ILogData } from "./logger";
+import { JaegerTracer, opentracing } from 'jaeger-client';
+import { ILogData } from './logger';
 export interface ITracerConfig {
     useTracer: boolean;
     serviceName: string;
