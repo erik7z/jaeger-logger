@@ -5,21 +5,10 @@
 
 # Node artifact files
 node_modules/
-
-# Compiled Java class files
-*.class
-
-# Compiled Python bytecode
-*.py[cod]
+lib/
 
 # Log files
 *.log
-
-# Package files
-*.jar
-
-# Maven
-target/
 
 # JetBrains IDE
 .idea/
