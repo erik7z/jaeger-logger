@@ -22,7 +22,8 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "version": "1.2.12",
   "publishConfig": {
