@@ -4,6 +4,7 @@
   "jsRules": {},
   "rules": {
     "curly": [false, "ignore-same-line"],
+    "no-console": false,
     "semicolon": [true, "always", "ignore-bound-class-methods"],
     "trailing-comma": [true, {
       "singleline": "never",

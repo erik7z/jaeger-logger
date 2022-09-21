@@ -1,1 +1,2 @@
-export const square = (num: number) => num * num * num;
+export * as Logger from './logger';
+export * as Tracer from './tracer';
