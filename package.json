@@ -48,7 +48,6 @@
     "node": ">=18.4.0",
     "npm": ">=8.12.1"
   },
-  "engineStrict": true,
   "dependencies": {
     "jaeger-client": "^3.19.0",
     "lodash": "^4.17.21"
