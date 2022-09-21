@@ -1,9 +1,9 @@
-import Tracer, { ITracerConfig, LogContext } from "./tracer";
-import { opentracing } from "jaeger-client";
+import Tracer, { ITracerConfig, LogContext } from './tracer';
+import { opentracing } from 'jaeger-client';
 export declare type ILogData = {
     [key: string]: any;
     queNumber?: any;
-    type?: "error" | "info";
+    type?: 'error' | 'info';
     message?: string;
     data?: any;
     err?: any;
@@ -20,7 +20,7 @@ export interface ILoggerOptions {
     parentContext?: LogContext;
     createNewContext?: boolean;
 }
-declare type ILoggerRequiredConfig = Required<Pick<ILoggerConfig, "excludeClasses" | "consoleDepth">>;
+declare type ILoggerRequiredConfig = Required<Pick<ILoggerConfig, 'excludeClasses' | 'consoleDepth'>>;
 export declare const defaultConfig: ILoggerConfig & ILoggerRequiredConfig;
 export declare const LOGGER: unique symbol;
 export default class Logger {
