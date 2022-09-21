@@ -1,5 +1,5 @@
 import { initTracer, JaegerTracer, opentracing } from 'jaeger-client';
-import { ExcludeClasses, ILogData } from './logger';
+import { ILogData } from './logger';
 import Logger from './logger';
 
 export interface ITracerConfig {
@@ -22,7 +22,7 @@ export const defaultConfig: ITracerConfig = {
     logspans: true,
     collectorEndpoint: '',
   },
-  excludeClasses: ExcludeClasses,
+  excludeClasses: ["Transaction", "Logger"],
 };
 
 let tracer: Tracer;
