@@ -6,11 +6,12 @@ pipelines:
         name: Build
         script:
           - npm install
+          - npm run prepublishOnly
     - step:
         name: Publish
         deployment: production
         script:
-          - npm run prepublishOnly
+          - npm run preversion
           - npm version patch -m "Upgrade to version %s [skip ci]"
           - git push && git push --tags
           - pipe: atlassian/npm-publish:0.2.0
