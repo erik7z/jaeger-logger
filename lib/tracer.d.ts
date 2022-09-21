@@ -1,5 +1,5 @@
-import { JaegerTracer, opentracing } from 'jaeger-client';
-import { ILogData } from './logger';
+import { JaegerTracer, opentracing } from "jaeger-client";
+import { ILogData } from "./logger";
 export interface ITracerConfig {
     useTracer: boolean;
     serviceName: string;
@@ -11,7 +11,11 @@ export interface ITracerConfig {
 }
 export declare type LogContext = opentracing.Span;
 export declare const defaultConfig: ITracerConfig;
-export declare class Tracer {
+/**
+ * Singleton for returning instance of the Tracer class.
+ */
+export declare const getDefaultTracer: () => Tracer;
+export default class Tracer {
     readonly client: JaegerTracer;
     readonly config: ITracerConfig;
     readonly serviceName: string;
@@ -23,7 +27,3 @@ export declare class Tracer {
     getSubContext(contextName: string, parentContext?: LogContext): LogContext | undefined;
     write(action: string, logData: ILogData, writeContext: LogContext): void;
 }
-/**
- * Singleton for returning instance of the Tracer class.
- */
-export default function getDefaultTracer(): Tracer;

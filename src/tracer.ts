@@ -1,5 +1,6 @@
 import { initTracer, JaegerTracer, opentracing } from 'jaeger-client';
-import { ExcludeClasses, ILogData, Logger } from './logger';
+import { ExcludeClasses, ILogData } from './logger';
+import Logger from './logger';
 
 export interface ITracerConfig {
   useTracer: boolean;
@@ -24,7 +25,16 @@ export const defaultConfig: ITracerConfig = {
   excludeClasses: ExcludeClasses,
 };
 
-export class Tracer {
+let tracer: Tracer;
+/**
+ * Singleton for returning instance of the Tracer class.
+ */
+export const getDefaultTracer = () => {
+  if (!tracer) tracer = new Tracer(defaultConfig);
+  return tracer;
+};
+
+export default class Tracer {
   public readonly client: JaegerTracer;
   public readonly config: ITracerConfig;
   public readonly serviceName;
@@ -95,13 +105,4 @@ export class Tracer {
       },
     });
   }
-}
-
-let tracer: Tracer;
-/**
- * Singleton for returning instance of the Tracer class.
- */
-export default function getDefaultTracer() {
-  if (!tracer) tracer = new Tracer(defaultConfig);
-  return tracer;
 }

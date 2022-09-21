@@ -1,4 +1,4 @@
-import getDefaultTracer, { ITracerConfig, LogContext, Tracer } from './tracer';
+import Tracer, { ITracerConfig, LogContext, getDefaultTracer } from './tracer';
 import { opentracing } from 'jaeger-client';
 import * as _ from 'lodash';
 
@@ -35,7 +35,7 @@ export const defaultConfig: ILoggerConfig & ILoggerRequiredConfig = {
 
 export const LOGGER = Symbol('LOGGER');
 
-export class Logger {
+export default class Logger {
   public readonly type = LOGGER;
   public readonly tracer: Tracer;
   public readonly context: LogContext | undefined;
