@@ -22,7 +22,7 @@ export const defaultConfig: ITracerConfig = {
     logspans: true,
     collectorEndpoint: '',
   },
-  excludeClasses: ['Transaction', 'Logger'],
+  excludeClasses: ['Transaction', 'Logger', 'Banana', 'Cucumber'],
 };
 
 let tracer: Tracer;
