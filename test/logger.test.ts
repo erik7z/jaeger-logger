@@ -26,9 +26,7 @@ describe("Logger", () => {
         const fcb = new FakeClassB(1, "b");
 
         const args = [1, fca, 2, fcb];
-
         const newArgs = Logger.simplifyArgs(args, ["FakeClassA"]);
-
 
         expect(newArgs).toStrictEqual([1, "FakeClassA", 2, fcb]);
       });
@@ -66,9 +64,7 @@ describe("Logger", () => {
         }
 
         const args = [1, nested, 2, fcb];
-
         const newArgs = Logger.simplifyArgs(args, ["FakeClassA"]);
-
 
         expect(newArgs).toStrictEqual([1, nestedReplaced, 2, fcb]);
       });
@@ -81,9 +77,9 @@ describe("Logger", () => {
         }
 
         const fcb = new FakeClassB(1, "b");
+
         const args = [1, buff, 2, fcb];
         const newArgs = Logger.simplifyArgs(args, ["FakeClassA"]);
-
 
         expect(newArgs).toStrictEqual([1, "Buffer", 2, fcb]);
       });
@@ -116,11 +112,9 @@ describe("Logger", () => {
           }
         }
 
-
         const fcb = new FakeClassB(1, "b");
         const args = [1, nested, 2, fcb];
         const newArgs = Logger.simplifyArgs(args, ["FakeClassA"]);
-
 
         expect(newArgs).toStrictEqual([1, nestedReplaced, 2, fcb]);
       });
