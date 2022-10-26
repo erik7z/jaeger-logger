@@ -53,10 +53,10 @@ export default class Tracer {
       {
         logger: {
           info(msg: string) {
-            console.log('INFO ', msg);
+            console.info('INFO ', msg);
           },
           error(msg: string) {
-            console.log('ERROR', msg);
+            console.error('ERROR', msg);
           },
         },
       },

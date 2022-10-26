@@ -59,11 +59,3 @@ subLog.info('response', { data: { result: 'some result' } }).finish()
 // close parent logger
 logger.finish()
 ```
-
-# PACKAGE PUBLISHING
-
-Dont forget to build code with:
-```shell
-npm run prepublishOnly
-```
-Then add it to git and push to repo.

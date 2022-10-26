@@ -45,6 +45,7 @@ export default class Logger {
   constructor(public readonly serviceName: string, options: ILoggerOptions = {}) {
     const { config: optionsConfig, parentContext, createNewContext } = options;
     this.config = { ...defaultConfig, ...optionsConfig };
+
     this.tracer = getDefaultTracer(this.config.tracerConfig);
     if (parentContext || createNewContext) {
       // create new context or create subcontext if parent context provided
