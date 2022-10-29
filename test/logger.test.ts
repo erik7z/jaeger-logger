@@ -2,14 +2,42 @@
 
 
 describe("Logger", () => {
-  describe("Main functionality", () => {
-    test("Logger instance name should be assigned during creation", async () => {
-      // some problems with open handles after tests completed https://stackoverflow.com/questions/53935108/jest-did-not-exit-one-second-after-the-test-run-has-completed-using-express
-      const logger = new Logger("testservice");
-      await logger.finish();
-      expect(logger.serviceName).toBe("testservice");
+
+  describe("Main Functionality", () => {
+    describe("Initialization", () => {
+      test("Logger instance name should be assigned during creation", async () => {
+        // some problems with open handles after tests completed https://stackoverflow.com/questions/53935108/jest-did-not-exit-one-second-after-the-test-run-has-completed-using-express
+        const logger = new Logger("testservice");
+        await logger.finish();
+        expect(logger.serviceName).toBe("testservice");
+      });
+    });
+
+    describe("Logger.error", () => {
+      test("Should use console.error if logging to console enabled", async () => {
+        const logger = new Logger("test", { config: { writeToConsole: true, tracerConfig: { useTracer: false } } });
+        const consoleSpy = jest.spyOn(console, "error");
+
+        logger.error("error", { err: "err" });
+
+        expect(consoleSpy).toBeCalled();
+        await logger.finish();
+      });
+
+      test("Should accept error as a first parameter, and properly log it", async () => {
+        const logger = new Logger("test", { config: { writeToConsole: false, tracerConfig: { useTracer: false } } });
+        const loggerSpy = jest.spyOn(logger, "write");
+
+        const err = new Error("Oh crap!");
+
+        logger.error(err, { err: "err" });
+
+        expect(loggerSpy).toHaveBeenCalledWith("error", { err, "type": "error" }, undefined);
+        await logger.finish();
+      });
     });
   });
+
 
   describe("Static functions", () => {
     describe("simplifyArgs", () => {
@@ -44,24 +72,24 @@ describe("Logger", () => {
         const fcb = new FakeClassB(1, "b");
 
         const nested = {
-          a: 'a',
+          a: "a",
           n: {
             n1: {
               fca
             },
-            b: 'b'
+            b: "b"
           }
-        }
+        };
 
         const nestedReplaced = {
-          a: 'a',
+          a: "a",
           n: {
             n1: {
-              fca: 'FakeClassA'
+              fca: "FakeClassA"
             },
-            b: 'b'
+            b: "b"
           }
-        }
+        };
 
         const args = [1, nested, 2, fcb];
         const newArgs = Logger.simplifyArgs(args, ["FakeClassA"]);
@@ -93,24 +121,24 @@ describe("Logger", () => {
         }
 
         const nested = {
-          a: 'a',
+          a: "a",
           n: {
             n1: {
               buff
             },
-            b: 'b'
+            b: "b"
           }
-        }
+        };
 
         const nestedReplaced = {
-          a: 'a',
+          a: "a",
           n: {
             n1: {
-              buff: 'Buffer'
+              buff: "Buffer"
             },
-            b: 'b'
+            b: "b"
           }
-        }
+        };
 
         const fcb = new FakeClassB(1, "b");
         const args = [1, nested, 2, fcb];

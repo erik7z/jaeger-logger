@@ -1,6 +1,7 @@
 import { initTracer, JaegerTracer, opentracing } from 'jaeger-client';
 import { ILogData } from './logger';
 import Logger from './logger';
+import deepmerge from "deepmerge";
 
 export interface ITracerConfig {
   useTracer: boolean;
@@ -40,7 +41,8 @@ export default class Tracer {
   public readonly serviceName;
 
   constructor(optionsConfig: Partial<ITracerConfig>) {
-    this.config = { ...defaultConfig, ...optionsConfig };
+    this.config = deepmerge(defaultConfig, optionsConfig);
+
     this.serviceName = optionsConfig.serviceName;
     this.client = initTracer(
       {
@@ -76,6 +78,7 @@ export default class Tracer {
     return subContext;
   }
 
+  // TODO: add tests for proper message output
   write(action: string, logData: ILogData, writeContext: LogContext) {
     if (!this.config.useTracer) return;
     const { type, message, data, err } = logData;

@@ -1,5 +1,6 @@
 import Tracer, { ITracerConfig, LogContext, getDefaultTracer } from "./tracer";
 import { opentracing } from "jaeger-client";
+import deepmerge from "deepmerge";
 import * as _ from "lodash";
 
 export type ILogData = {
@@ -13,7 +14,7 @@ export type ILogData = {
 
 export interface ILoggerConfig {
   writeToConsole?: boolean;
-  tracerConfig?: ITracerConfig;
+  tracerConfig?: Partial<ITracerConfig>;
   excludeMethods?: string[];
   excludeClasses?: string[];
   consoleDepth?: number;
@@ -43,8 +44,8 @@ export default class Logger {
   public isToCloseContext = true;
 
   constructor(public readonly serviceName: string, options: ILoggerOptions = {}) {
-    const { config: optionsConfig, parentContext, createNewContext } = options;
-    this.config = { ...defaultConfig, ...optionsConfig };
+    const { config: optionsConfig = {}, parentContext, createNewContext } = options;
+    this.config = deepmerge(defaultConfig, optionsConfig);
 
     this.tracer = getDefaultTracer(this.config.tracerConfig);
     if (parentContext || createNewContext) {
@@ -99,7 +100,13 @@ export default class Logger {
     return this.write(action, { ...logData, type: "info" }, context);
   }
 
-  error(action: string, logData: ILogData = { message: "", data: null, queNumber: 0 }, context?: LogContext): Logger {
+  error(actionOrError: string | Error, logData: ILogData = { message: "", data: null, queNumber: 0 }, context?: LogContext): Logger {
+    let action = 'error'
+    if(typeof actionOrError === 'string') action = actionOrError
+    else {
+      logData = {...logData, err: actionOrError}
+    }
+
     return this.write(action, { ...logData, type: "error" }, context);
   }
 
