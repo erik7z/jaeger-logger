@@ -41,6 +41,10 @@ describe("Logger", () => {
 
   // TODO: below group of tests (they are ok only if running one by one)
   describe.skip("Logger.wrapCall", () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
     test("Should wrap function call request and response in sub log", async () => {
       const logger = new Logger("test", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
 
@@ -51,7 +55,7 @@ describe("Logger", () => {
         return a + b;
       }
 
-      const res = logger.wrapCall("fakeCall", logger, fakeFunc, 1, 2);
+      const res = await logger.wrapCall("fakeCall", logger, fakeFunc, 1, 2);
       expect(res).toEqual(3);
 
 

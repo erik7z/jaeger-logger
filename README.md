@@ -1,4 +1,4 @@
-# GLB Logger #
+# [GLB Logger](https://www.npmjs.com/package/@gemlightbox/logger)
 
 Logging / tracing library.
 

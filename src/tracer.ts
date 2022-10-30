@@ -20,7 +20,7 @@ export const defaultConfig: ITracerConfig = {
   reporter: {
     logspans: true,
   },
-  excludeClasses: ["Transaction", "Logger"]
+  excludeClasses: ["Transaction", "Logger"],
 };
 
 let tracer: Tracer;
@@ -44,9 +44,9 @@ export default class Tracer {
         serviceName,
         sampler: {
           type: "const",
-          param: 1
+          param: 1,
         },
-        ...this.config
+        ...this.config,
       },
       {
         logger: {
@@ -55,8 +55,8 @@ export default class Tracer {
           },
           error(msg: string) {
             console.error("TRACER ERROR", msg);
-          }
-        }
+          },
+        },
       }
     );
   }
@@ -68,7 +68,7 @@ export default class Tracer {
   getSubContext(contextName: string, parentContext?: LogContext): LogContext | undefined {
     if (!contextName) return;
     const subContext: LogContext = this.client.startSpan(contextName, {
-      ...(parentContext ? { childOf: parentContext } : {})
+      ...(parentContext ? { childOf: parentContext } : {}),
     });
     subContext.addTags({ [opentracing.Tags.SPAN_KIND]: this.serviceName });
     return subContext;
@@ -97,11 +97,11 @@ export default class Tracer {
               ...(err.customMessage ? { customMessage: err.customMessage } : {}),
               ...(err.shortMessage ? { shortMessage: err.shortMessage } : {}),
               ...(err.detailedMessage ? { detailedMessage: err.detailedMessage } : {}),
-              ...(err.stack ? { stack: err.stack } : {})
-            }
+              ...(err.stack ? { stack: err.stack } : {}),
+            },
           }
-          : {})
-      }
+          : {}),
+      },
     });
   }
 

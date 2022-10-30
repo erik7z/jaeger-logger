@@ -31,7 +31,7 @@ type ILoggerRequiredConfig = Required<Pick<ILoggerConfig, "excludeClasses" | "co
 export const defaultConfig: ILoggerConfig & ILoggerRequiredConfig = {
   excludeMethods: ["assertInitialized"],
   excludeClasses: ["Transaction", "Logger"],
-  consoleDepth: 3
+  consoleDepth: 3,
 };
 
 export const LOGGER = Symbol("LOGGER");
@@ -103,10 +103,10 @@ export default class Logger {
   }
 
   error(actionOrError: string | Error | unknown, logData: ILogData = { message: "", data: null, queNumber: 0 }, context?: LogContext): Logger {
-    let action = 'error'
-    if(typeof actionOrError === 'string') action = actionOrError
+    let action = 'error';
+    if(typeof actionOrError === 'string') action = actionOrError;
     else {
-      logData = {...logData, err: actionOrError}
+      logData = {...logData, err: actionOrError};
     }
 
     return this.write(action, { ...logData, type: "error" }, context);
@@ -122,7 +122,7 @@ export default class Logger {
     if (subLog.context != null) {
       subLog.context.addTags({
         [opentracing.Tags.DB_INSTANCE]: dbInstance,
-        [opentracing.Tags.DB_STATEMENT]: query
+        [opentracing.Tags.DB_STATEMENT]: query,
       });
       subLog.info(`${queryType} ${dbInstance}`, { data: { query, args: [data.instance?.dataValues] } });
       subLog.finish();
@@ -148,26 +148,26 @@ export default class Logger {
    * @param func - function to be called
    * @param args - arguments for provided function
    */
-  public wrapCall = <T = any>(contextName: string, parentLogger: Logger, func: Function, ...args: any):T => {
-    contextName = contextName ?? func.name
-    const subLogger = parentLogger.getSubLogger(contextName, parentLogger.context)
+  public wrapCall = <T = any>(contextName: string, parentLogger: Logger, func: any, ...args: any):T => {
+    contextName = contextName ?? func.name;
+    const subLogger = parentLogger.getSubLogger(contextName, parentLogger.context);
     try {
-      subLogger.info('request', { action: func.name, data: { args } })
+      subLogger.info('request', { action: func.name, data: { args } });
       const response = func.apply(this, args);
 
       Promise.resolve(response).then((data) => {
-        subLogger.info('response', { action: contextName, data: { return: data || response } })
+        subLogger.info('response', { action: contextName, data: { return: data || response } });
       }).catch((e) => { // for async functions
-        subLogger.error('error', { action: contextName, err: e })
-        throw e
+        subLogger.error('error', { action: contextName, err: e });
+        throw e;
       }).finally(() => {
-        subLogger.finish()
-      })
+        subLogger.finish();
+      });
 
       return response;
     } catch (e) { // in case decorated function not async
-      subLogger.error('error', { action: contextName, err: e })
-      throw e
+      subLogger.error('error', { action: contextName, err: e });
+      throw e;
     }
   }
 
@@ -227,7 +227,7 @@ export default class Logger {
     if (depth > 0) {
       if (_.isObject(arg)) {
         _.forIn(arg, (value, key) => {
-          //@ts-ignore
+          // @ts-ignore
           arg[key] = Logger.replaceBufferRecursive(value, depth - 1);
         });
       }
