@@ -1,14 +1,13 @@
-import { initTracer, JaegerTracer, opentracing } from 'jaeger-client';
-import { ILogData } from './logger';
-import Logger from './logger';
+import { initTracer, JaegerTracer, opentracing } from "jaeger-client";
+import { ILogData } from "./logger";
+import Logger from "./logger";
 import deepmerge from "deepmerge";
 
 export interface ITracerConfig {
   useTracer: boolean;
-  serviceName: string;
   reporter: {
     logspans: boolean;
-    collectorEndpoint: string;
+    collectorEndpoint?: string;
   };
   excludeClasses?: string[];
 }
@@ -18,50 +17,47 @@ export type LogContext = opentracing.Span;
 
 export const defaultConfig: ITracerConfig = {
   useTracer: false,
-  serviceName: 'api',
   reporter: {
     logspans: true,
-    collectorEndpoint: '',
   },
-  excludeClasses: ['Transaction', 'Logger'],
+  excludeClasses: ["Transaction", "Logger"]
 };
 
 let tracer: Tracer;
 /**
  * Singleton for returning instance of the Tracer class.
  */
-export const getDefaultTracer = (config: Partial<ITracerConfig> = {}) => {
-  if (!tracer) tracer = new Tracer(config);
+export const getDefaultTracer = (serviceName: string, config: Partial<ITracerConfig> = {}) => {
+  if (!tracer) tracer = new Tracer(serviceName, config);
   return tracer;
 };
 
 export default class Tracer {
   public readonly client: JaegerTracer;
   public readonly config: ITracerConfig;
-  public readonly serviceName;
 
-  constructor(optionsConfig: Partial<ITracerConfig>) {
+  constructor(public readonly serviceName: string, optionsConfig: Partial<ITracerConfig>) {
     this.config = deepmerge(defaultConfig, optionsConfig);
 
-    this.serviceName = optionsConfig.serviceName;
     this.client = initTracer(
       {
+        serviceName,
         sampler: {
-          type: 'const',
-          param: 1,
+          type: "const",
+          param: 1
         },
-        ...this.config,
+        ...this.config
       },
       {
         logger: {
           info(msg: string) {
-            console.info('INFO ', msg);
+            console.info("TRACER INFO ", msg);
           },
           error(msg: string) {
-            console.error('ERROR', msg);
-          },
-        },
-      },
+            console.error("TRACER ERROR", msg);
+          }
+        }
+      }
     );
   }
 
@@ -72,40 +68,45 @@ export default class Tracer {
   getSubContext(contextName: string, parentContext?: LogContext): LogContext | undefined {
     if (!contextName) return;
     const subContext: LogContext = this.client.startSpan(contextName, {
-      ...(parentContext ? { childOf: parentContext } : {}),
+      ...(parentContext ? { childOf: parentContext } : {})
     });
     subContext.addTags({ [opentracing.Tags.SPAN_KIND]: this.serviceName });
     return subContext;
   }
 
   // TODO: add tests for proper message output
-  write(action: string, logData: ILogData, writeContext: LogContext) {
+  write(action: string, logData: ILogData, context: LogContext) {
     if (!this.config.useTracer) return;
     const { type, message, data, err } = logData;
-    if (type === 'error') writeContext.setTag(opentracing.Tags.ERROR, true);
+    if (type === "error") context.setTag(opentracing.Tags.ERROR, true);
     if (data?.args) data.args = Logger.simplifyArgs(data.args, this.config.excludeClasses);
 
-    writeContext.log({
+    this.send(context, {
       action,
       details: {
         ...(message ? { message } : {}),
         ...(data ? { data } : {}),
         ...(err
           ? {
-              isError: true,
-              err: {
-                ...(err.code ? { code: err.code } : {}),
-                ...(err.status ? { status: err.status } : {}),
-                ...(err.statusCode ? { statusCode: err.statusCode } : {}),
-                ...(err.message ? { message: err.message } : {}),
-                ...(err.customMessage ? { customMessage: err.customMessage } : {}),
-                ...(err.shortMessage ? { shortMessage: err.shortMessage } : {}),
-                ...(err.detailedMessage ? { detailedMessage: err.detailedMessage } : {}),
-                ...(err.stack ? { stack: err.stack } : {}),
-              },
+            isError: true,
+            err: {
+              ...(err.code ? { code: err.code } : {}),
+              ...(err.status ? { status: err.status } : {}),
+              ...(err.statusCode ? { statusCode: err.statusCode } : {}),
+              ...(err.message ? { message: err.message } : {}),
+              ...(err.customMessage ? { customMessage: err.customMessage } : {}),
+              ...(err.shortMessage ? { shortMessage: err.shortMessage } : {}),
+              ...(err.detailedMessage ? { detailedMessage: err.detailedMessage } : {}),
+              ...(err.stack ? { stack: err.stack } : {})
             }
-          : {}),
-      },
+          }
+          : {})
+      }
     });
+  }
+
+  send(context: LogContext, keyValuePairs: { [key: string]: any }, timestamp?: number): LogContext {
+    context.log(keyValuePairs, timestamp);
+    return context;
   }
 }

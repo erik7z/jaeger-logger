@@ -43,14 +43,16 @@ export default class Logger {
   public readonly config: ILoggerConfig & ILoggerRequiredConfig;
   public isToCloseContext = true;
 
+  // TODO: simplify options
   constructor(public readonly serviceName: string, options: ILoggerOptions = {}) {
     const { config: optionsConfig = {}, parentContext, createNewContext } = options;
     this.config = deepmerge(defaultConfig, optionsConfig);
 
-    this.tracer = getDefaultTracer(this.config.tracerConfig);
+    this.tracer = getDefaultTracer(serviceName, this.config.tracerConfig);
+    // TODO: simplify newcontext/subcontext
     if (parentContext || createNewContext) {
       // create new context or create subcontext if parent context provided
-      this.context = this.tracer.getSubContext(this.serviceName, parentContext);
+      this.context = this.tracer.getSubContext(serviceName, parentContext);
     }
   }
 
@@ -100,7 +102,7 @@ export default class Logger {
     return this.write(action, { ...logData, type: "info" }, context);
   }
 
-  error(actionOrError: string | Error, logData: ILogData = { message: "", data: null, queNumber: 0 }, context?: LogContext): Logger {
+  error(actionOrError: string | Error | unknown, logData: ILogData = { message: "", data: null, queNumber: 0 }, context?: LogContext): Logger {
     let action = 'error'
     if(typeof actionOrError === 'string') action = actionOrError
     else {
@@ -130,12 +132,43 @@ export default class Logger {
   /**
    * Static error logger to use without 'new'
    * logs an error and throws it
-   * @deprecated **uses default config, so tracer will not work**
+   * @deprecated **uses default config where connection to jaeger not set, so tracer will not work**
    */
   public static logError(e: Error, ctx: any | ILogData, serviceName = "Unknown service"): void {
     const logger = new Logger(serviceName);
     logger.error(e.message, ctx);
     throw e;
+  }
+
+  /**
+   * Wrap function call input/output
+   * Creates sub span in logger context and records function request/response
+   * @param contextName - name of the span
+   * @param parentLogger
+   * @param func - function to be called
+   * @param args - arguments for provided function
+   */
+  public wrapCall = <T = any>(contextName: string, parentLogger: Logger, func: Function, ...args: any):T => {
+    contextName = contextName ?? func.name
+    const subLogger = parentLogger.getSubLogger(contextName, parentLogger.context)
+    try {
+      subLogger.info('request', { action: func.name, data: { args } })
+      const response = func.apply(this, args);
+
+      Promise.resolve(response).then((data) => {
+        subLogger.info('response', { action: contextName, data: { return: data || response } })
+      }).catch((e) => { // for async functions
+        subLogger.error('error', { action: contextName, err: e })
+        throw e
+      }).finally(() => {
+        subLogger.finish()
+      })
+
+      return response;
+    } catch (e) { // in case decorated function not async
+      subLogger.error('error', { action: contextName, err: e })
+      throw e
+    }
   }
 
   /**
@@ -185,7 +218,7 @@ export default class Logger {
   }
 
   /**
-   * finds Buffer in args recursively and replaces them with string 'Buffer'.
+   * finds Buffers in args recursively and replaces them with string 'Buffer'.
    * modifies original value.
    */
   public static replaceBufferRecursive(arg: any, depth = 3) {
