@@ -140,11 +140,13 @@ export default class Logger {
     throw e;
   }
 
+
+
   /**
    * Wrap function call input/output
    * Creates sub span in logger context and records function request/response
    * @param contextName - name of the span
-   * @param parentLogger
+   * @param parentLogger // TODO: try to use self logger instead of passing in params
    * @param func - function to be called
    * @param args - arguments for provided function
    */
