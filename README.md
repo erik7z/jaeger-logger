@@ -59,3 +59,5 @@ subLog.info('response', { data: { result: 'some result' } }).finish()
 // close parent logger
 logger.finish()
 ```
+### Publishing notes
+- dont forget to run build!
