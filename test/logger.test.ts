@@ -40,9 +40,9 @@ describe("Logger", () => {
   });
 
   // TODO: below group of tests (they are ok only if running one by one)
-  describe.skip("Logger.wrapCall", () => {
+  describe("Logger.wrapCall", () => {
     beforeEach(() => {
-      jest.clearAllMocks()
+      jest.resetAllMocks()
     })
 
     test("Should wrap function call request and response in sub log", async () => {
@@ -94,7 +94,7 @@ describe("Logger", () => {
       await logger.finish();
     });
 
-    test("Should properly handle function errors in sub log", async () => {
+    test.skip("Should properly handle function errors in sub log", async () => {
       const logger = new Logger("test", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
 
       const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, "getSubContext");
@@ -149,7 +149,7 @@ describe("Logger", () => {
       await logger.finish();
     });
 
-    test("Should properly wrap async function call request and response in sub log", async () => {
+    test.skip("Should properly wrap async function call request and response in sub log", async () => {
       const logger = new Logger("test", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
 
       const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, "getSubContext");
@@ -257,7 +257,6 @@ describe("Logger", () => {
 
       await logger.finish();
     });
-
   });
 
 

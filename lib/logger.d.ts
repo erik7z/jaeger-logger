@@ -1,16 +1,16 @@
-import Tracer, { ITracerConfig, LogContext } from './tracer';
-import { opentracing } from 'jaeger-client';
+import Tracer, { ITracerConfig, LogContext } from "./tracer";
+import { opentracing } from "jaeger-client";
 export declare type ILogData = {
     [key: string]: any;
     queNumber?: any;
-    type?: 'error' | 'info';
+    type?: "error" | "info";
     message?: string;
     data?: any;
     err?: any;
 };
 export interface ILoggerConfig {
     writeToConsole?: boolean;
-    tracerConfig?: ITracerConfig;
+    tracerConfig?: Partial<ITracerConfig>;
     excludeMethods?: string[];
     excludeClasses?: string[];
     consoleDepth?: number;
@@ -20,7 +20,7 @@ export interface ILoggerOptions {
     parentContext?: LogContext;
     createNewContext?: boolean;
 }
-declare type ILoggerRequiredConfig = Required<Pick<ILoggerConfig, 'excludeClasses' | 'consoleDepth'>>;
+declare type ILoggerRequiredConfig = Required<Pick<ILoggerConfig, "excludeClasses" | "consoleDepth">>;
 export declare const defaultConfig: ILoggerConfig & ILoggerRequiredConfig;
 export declare const LOGGER: unique symbol;
 export default class Logger {
@@ -41,7 +41,7 @@ export default class Logger {
      */
     private consoleWrite;
     info(action: string, logData?: ILogData, context?: LogContext): Logger;
-    error(action: string, logData?: ILogData, context?: LogContext): Logger;
+    error(actionOrError: string | Error | unknown, logData?: ILogData, context?: LogContext): Logger;
     /**
      * logging db queries (only sequelize)
      */
@@ -49,9 +49,18 @@ export default class Logger {
     /**
      * Static error logger to use without 'new'
      * logs an error and throws it
-     * @deprecated **uses default config, so tracer will not work**
+     * @deprecated **uses default config where connection to jaeger not set, so tracer will not work**
      */
     static logError(e: Error, ctx: any | ILogData, serviceName?: string): void;
+    /**
+     * Wrap function call input/output
+     * Creates sub span in logger context and records function request/response
+     * @param contextName - name of the span
+     * @param parentLogger
+     * @param func - function to be called
+     * @param args - arguments for provided function
+     */
+    wrapCall: <T = any>(contextName: string, parentLogger: Logger, func: any, ...args: any) => T;
     /**
      * Useful for getting nested logs.
      * Returns a new Logger instance with the given name and parentContext.
@@ -69,6 +78,11 @@ export default class Logger {
      * finds arg nested property by provided class name and replaces it with class name (string).
      * modifies original value.
      */
-    static simplifyArgsClasses(arg: any, classNames: string[], depth?: number): any;
+    static replaceClassesRecursive(arg: any, classNames: string[], depth?: number): any;
+    /**
+     * finds Buffers in args recursively and replaces them with string 'Buffer'.
+     * modifies original value.
+     */
+    static replaceBufferRecursive(arg: any, depth?: number): any;
 }
 export {};
