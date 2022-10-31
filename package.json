@@ -16,7 +16,7 @@
     "lint": "./node_modules/tslint/bin/tslint --fix -c tslint.json src/**/*.ts",
     "format": "./node_modules/.bin/prettier --write \"src/**/*.ts\"",
     "build": "./node_modules/typescript/bin/tsc",
-    "test": "./node_modules/.bin/jest --config jestconfig.json"
+    "test": "./node_modules/.bin/jest --config jestconfig.json --runInBand"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
