@@ -93,7 +93,7 @@ export default class Tracer {
                 ...(err.code ? { code: err.code } : {}),
                 ...(err.status ? { status: err.status } : {}),
                 ...(err.statusCode ? { statusCode: err.statusCode } : {}),
-                ...(err.message ? { message: err.message } : {}),
+                ...(err.message ? { message: err.message } : typeof err === 'string' ? { message: err } : {}),
                 ...(err.customMessage ? { customMessage: err.customMessage } : {}),
                 ...(err.shortMessage ? { shortMessage: err.shortMessage } : {}),
                 ...(err.detailedMessage ? { detailedMessage: err.detailedMessage } : {}),

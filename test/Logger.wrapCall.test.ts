@@ -169,6 +169,7 @@ describe("Logger.wrapCall", () => {
         return this.a + b;
       }
     }
+
     const fake = new FakeClass(3);
 
     const res = await logger.wrapCall("fakeCall", fake.fakeFunc.bind(fake), 4);
@@ -185,21 +186,13 @@ describe("Logger.wrapCall", () => {
     const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, "getSubContext");
     const TracerSendSpy = jest.spyOn(Tracer.prototype, "send");
 
-    let stack = "";
-    let message = "";
+    const errMessage = "God damn!";
 
-    const fakeFunc = async (a: number, b: number) => new Promise((resolve, reject) => {
-      reject("God damn!");
-    });
+    const fakeFunc = async (a: number, b: number) => new Promise((_, reject) => reject(errMessage));
 
     await expect(async () => {
-      // throw new Error("God damn!")
-      await fakeFunc(1, 2);
-      await new Promise(r => setTimeout(r, 500));
-
-      // const res = await logger.wrapCall("fakeCall", logger, fakeFunc, 1, 2);
-      // console.log(res)
-    }).rejects.toThrowError("God damn!");
+      await logger.wrapCall("fakeCall", fakeFunc, 1, 2);
+    }).rejects.toEqual(errMessage);
 
 
     // subcontext "fakeCall" has been created
@@ -220,15 +213,12 @@ describe("Logger.wrapCall", () => {
       }
     });
 
-    // waiting for processing response
-    await new Promise(r => setTimeout(r, 1000));
-
-    expect(TracerSendSpy.mock.calls[1][1]).toStrictEqual({
+    // error details has been sent to collector
+    expect(TracerSendSpy.mock.lastCall?.[1]).toStrictEqual({
       action: "error",
       details: {
         err: {
-          message,
-          stack
+          message: errMessage
         },
         isError: true
       }
