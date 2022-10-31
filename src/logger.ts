@@ -150,9 +150,9 @@ export default class Logger {
    * @param func - function to be called
    * @param args - arguments for provided function
    */
-  public wrapCall = <T = any>(contextName: string, parentLogger: Logger, func: any, ...args: any):T => {
+  public wrapCall = <T = any>(contextName: string, func: any, ...args: any):T => {
     contextName = contextName ?? func.name;
-    const subLogger = parentLogger.getSubLogger(contextName, parentLogger.context);
+    const subLogger = this.getSubLogger(contextName, this.context);
     try {
       subLogger.info('request', { action: func.name, data: { args } });
       const response = func.apply(this, args);

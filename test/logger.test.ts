@@ -55,7 +55,7 @@ describe("Logger", () => {
         return a + b;
       }
 
-      const res = await logger.wrapCall("fakeCall", logger, fakeFunc, 1, 2);
+      const res = await logger.wrapCall("fakeCall", fakeFunc, 1, 2);
       expect(res).toEqual(3);
 
 
@@ -108,7 +108,7 @@ describe("Logger", () => {
       }
 
       try {
-        logger.wrapCall("fakeCall", logger, fakeFunc, 1, 2);
+        logger.wrapCall("fakeCall", fakeFunc, 1, 2);
       } catch (e: any) {
         stack = e.stack;
         message = e.message;
@@ -163,7 +163,7 @@ describe("Logger", () => {
         });
       }
 
-      const res = await logger.wrapCall("fakeCall", logger, fakeFunc, 1, 2);
+      const res = await logger.wrapCall("fakeCall", fakeFunc, 1, 2);
       expect(res).toEqual(3);
 
 
