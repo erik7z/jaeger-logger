@@ -56,11 +56,11 @@ export default class Logger {
      * Wrap function call input/output
      * Creates sub span in logger context and records function request/response
      * @param contextName - name of the span
-     * @param parentLogger
+     * @param parentLogger // TODO: try to use self logger instead of passing in params
      * @param func - function to be called
      * @param args - arguments for provided function
      */
-    wrapCall: <T = any>(contextName: string, parentLogger: Logger, func: any, ...args: any) => T;
+    wrapCall: <T = any>(contextName: string, func: any, ...args: any) => T;
     /**
      * Useful for getting nested logs.
      * Returns a new Logger instance with the given name and parentContext.
