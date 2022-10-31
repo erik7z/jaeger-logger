@@ -164,9 +164,7 @@ export default class Logger {
         .catch((e) => {
           // for async functions
           subLogger.error('error', { action: contextName, err: e });
-          setTimeout(() => {
-            throw e;
-          }); // fix for "unhandled promise rejection error"
+          throw e;
         })
         .finally(() => {
           subLogger.finish();
