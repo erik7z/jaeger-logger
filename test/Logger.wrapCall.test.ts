@@ -1,10 +1,10 @@
-// TODO: below group of tests (they are ok only if running one by one)
 import Logger from "../src/logger";
 import Tracer from "../src/tracer";
+
 describe("Logger.wrapCall", () => {
   afterEach(() => {
-    jest.clearAllMocks()
-  })
+    jest.clearAllMocks();
+  });
 
   test("Should wrap function call request and response in sub log", async () => {
     const logger = new Logger("test1", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
@@ -156,6 +156,25 @@ describe("Logger.wrapCall", () => {
         }
       }
     });
+    await logger.finish();
+  });
+
+  test("Should properly handle wrapped function 'this' context", async () => {
+    const logger = new Logger("test", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
+
+    class FakeClass {
+      constructor(private a: number) {}
+
+      fakeFunc(b: number) {
+        return this.a + b;
+      }
+    }
+    const fake = new FakeClass(3);
+
+    const res = await logger.wrapCall("fakeCall", fake.fakeFunc.bind(fake), 4);
+
+    expect(res).toEqual(7);
+
     await logger.finish();
   });
 

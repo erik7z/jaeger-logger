@@ -1,7 +1,7 @@
-import { initTracer, JaegerTracer, opentracing } from "jaeger-client";
-import { ILogData } from "./logger";
-import Logger from "./logger";
-import deepmerge from "deepmerge";
+import { initTracer, JaegerTracer, opentracing } from 'jaeger-client';
+import { ILogData } from './logger';
+import Logger from './logger';
+import deepmerge from 'deepmerge';
 
 export interface ITracerConfig {
   useTracer: boolean;
@@ -20,7 +20,7 @@ export const defaultConfig: ITracerConfig = {
   reporter: {
     logspans: true,
   },
-  excludeClasses: ["Transaction", "Logger"],
+  excludeClasses: ['Transaction', 'Logger'],
 };
 
 let tracer: Tracer;
@@ -43,7 +43,7 @@ export default class Tracer {
       {
         serviceName,
         sampler: {
-          type: "const",
+          type: 'const',
           param: 1,
         },
         ...this.config,
@@ -51,13 +51,13 @@ export default class Tracer {
       {
         logger: {
           info(msg: string) {
-            console.info("TRACER INFO ", msg);
+            console.info('TRACER INFO ', msg);
           },
           error(msg: string) {
-            console.error("TRACER ERROR", msg);
+            console.error('TRACER ERROR', msg);
           },
         },
-      }
+      },
     );
   }
 
@@ -78,7 +78,7 @@ export default class Tracer {
   write(action: string, logData: ILogData, context: LogContext) {
     if (!this.config.useTracer) return;
     const { type, message, data, err } = logData;
-    if (type === "error") context.setTag(opentracing.Tags.ERROR, true);
+    if (type === 'error') context.setTag(opentracing.Tags.ERROR, true);
     if (data?.args) data.args = Logger.simplifyArgs(data.args, this.config.excludeClasses);
 
     this.send(context, {
@@ -88,18 +88,18 @@ export default class Tracer {
         ...(data ? { data } : {}),
         ...(err
           ? {
-            isError: true,
-            err: {
-              ...(err.code ? { code: err.code } : {}),
-              ...(err.status ? { status: err.status } : {}),
-              ...(err.statusCode ? { statusCode: err.statusCode } : {}),
-              ...(err.message ? { message: err.message } : {}),
-              ...(err.customMessage ? { customMessage: err.customMessage } : {}),
-              ...(err.shortMessage ? { shortMessage: err.shortMessage } : {}),
-              ...(err.detailedMessage ? { detailedMessage: err.detailedMessage } : {}),
-              ...(err.stack ? { stack: err.stack } : {}),
-            },
-          }
+              isError: true,
+              err: {
+                ...(err.code ? { code: err.code } : {}),
+                ...(err.status ? { status: err.status } : {}),
+                ...(err.statusCode ? { statusCode: err.statusCode } : {}),
+                ...(err.message ? { message: err.message } : {}),
+                ...(err.customMessage ? { customMessage: err.customMessage } : {}),
+                ...(err.shortMessage ? { shortMessage: err.shortMessage } : {}),
+                ...(err.detailedMessage ? { detailedMessage: err.detailedMessage } : {}),
+                ...(err.stack ? { stack: err.stack } : {}),
+              },
+            }
           : {}),
       },
     });

@@ -1,12 +1,12 @@
-import Tracer, { ITracerConfig, LogContext, getDefaultTracer } from "./tracer";
-import { opentracing } from "jaeger-client";
-import deepmerge from "deepmerge";
-import * as _ from "lodash";
+import Tracer, { ITracerConfig, LogContext, getDefaultTracer } from './tracer';
+import { opentracing } from 'jaeger-client';
+import deepmerge from 'deepmerge';
+import * as _ from 'lodash';
 
 export type ILogData = {
   [key: string]: any;
   queNumber?: any;
-  type?: "error" | "info";
+  type?: 'error' | 'info';
   message?: string;
   data?: any;
   err?: any;
@@ -26,15 +26,15 @@ export interface ILoggerOptions {
   createNewContext?: boolean;
 }
 
-type ILoggerRequiredConfig = Required<Pick<ILoggerConfig, "excludeClasses" | "consoleDepth">>;
+type ILoggerRequiredConfig = Required<Pick<ILoggerConfig, 'excludeClasses' | 'consoleDepth'>>;
 
 export const defaultConfig: ILoggerConfig & ILoggerRequiredConfig = {
-  excludeMethods: ["assertInitialized"],
-  excludeClasses: ["Transaction", "Logger"],
+  excludeMethods: ['assertInitialized'],
+  excludeClasses: ['Transaction', 'Logger'],
   consoleDepth: 3,
 };
 
-export const LOGGER = Symbol("LOGGER");
+export const LOGGER = Symbol('LOGGER');
 
 export default class Logger {
   public readonly type = LOGGER;
@@ -65,12 +65,12 @@ export default class Logger {
 
   write(
     action: string,
-    logData: ILogData = { type: "info", message: "", data: null, queNumber: 0 },
-    context = this.context
+    logData: ILogData = { type: 'info', message: '', data: null, queNumber: 0 },
+    context = this.context,
   ): Logger {
     const { type, message, data, err, queNumber } = logData;
-    const details = `(${this.serviceName}):${queNumber || ""}: ${action || ""}`;
-    this.consoleWrite(type ?? "error", message ?? "", details, data, err);
+    const details = `(${this.serviceName}):${queNumber || ''}: ${action || ''}`;
+    this.consoleWrite(type ?? 'error', message ?? '', details, data, err);
 
     if (context && this.config?.tracerConfig?.useTracer) {
       this.tracer.write(action, logData, context);
@@ -81,16 +81,16 @@ export default class Logger {
   /**
    * Format & Log output to the console If the config says so
    */
-  private consoleWrite(type: "error" | "info", message: string, details: string, data: any, err: any): void {
+  private consoleWrite(type: 'error' | 'info', message: string, details: string, data: any, err: any): void {
     if (!this.config.writeToConsole) return;
 
-    let color = "\x1b[33m%s\x1b[0m : \x1b[36m%s\x1b[0m";
-    if (type === "info") {
-      console.log(color, details, message || "");
+    let color = '\x1b[33m%s\x1b[0m : \x1b[36m%s\x1b[0m';
+    if (type === 'info') {
+      console.log(color, details, message || '');
     } else {
-      color = "\x1b[31m%s\x1b[0m";
-      details = "";
-      console.error(color, details, message || "", err);
+      color = '\x1b[31m%s\x1b[0m';
+      details = '';
+      console.error(color, details, message || '', err);
     }
     if (data) {
       data.args = Logger.simplifyArgs(data.args, this.config.excludeClasses);
@@ -98,27 +98,31 @@ export default class Logger {
     }
   }
 
-  info(action: string, logData: ILogData = { message: "", data: null, queNumber: 0 }, context?: LogContext): Logger {
-    return this.write(action, { ...logData, type: "info" }, context);
+  info(action: string, logData: ILogData = { message: '', data: null, queNumber: 0 }, context?: LogContext): Logger {
+    return this.write(action, { ...logData, type: 'info' }, context);
   }
 
-  error(actionOrError: string | Error | unknown, logData: ILogData = { message: "", data: null, queNumber: 0 }, context?: LogContext): Logger {
+  error(
+    actionOrError: string | Error | unknown,
+    logData: ILogData = { message: '', data: null, queNumber: 0 },
+    context?: LogContext,
+  ): Logger {
     let action = 'error';
-    if(typeof actionOrError === 'string') action = actionOrError;
+    if (typeof actionOrError === 'string') action = actionOrError;
     else {
-      logData = {...logData, err: actionOrError};
+      logData = { ...logData, err: actionOrError };
     }
 
-    return this.write(action, { ...logData, type: "error" }, context);
+    return this.write(action, { ...logData, type: 'error' }, context);
   }
 
   /**
    * logging db queries (only sequelize)
    */
-  db = (query: string = "", data: any = {}) => {
-    const dbInstance = data.model?.name ?? "";
-    const queryType = data.type ?? "";
-    const subLog = this.getSubLogger(`sequelize${dbInstance ? ": " + dbInstance : ""}`, this.context);
+  db = (query: string = '', data: any = {}) => {
+    const dbInstance = data.model?.name ?? '';
+    const queryType = data.type ?? '';
+    const subLog = this.getSubLogger(`sequelize${dbInstance ? ': ' + dbInstance : ''}`, this.context);
     if (subLog.context != null) {
       subLog.context.addTags({
         [opentracing.Tags.DB_INSTANCE]: dbInstance,
@@ -134,13 +138,11 @@ export default class Logger {
    * logs an error and throws it
    * @deprecated **uses default config where connection to jaeger not set, so tracer will not work**
    */
-  public static logError(e: Error, ctx: any | ILogData, serviceName = "Unknown service"): void {
+  public static logError(e: Error, ctx: any | ILogData, serviceName = 'Unknown service'): void {
     const logger = new Logger(serviceName);
     logger.error(e.message, ctx);
     throw e;
   }
-
-
 
   /**
    * Wrap function call input/output
@@ -149,28 +151,32 @@ export default class Logger {
    * @param func - function to be called
    * @param args - arguments for provided function
    */
-  public wrapCall = <T = any>(contextName: string, func: any, ...args: any):T => {
-    contextName = contextName ?? func.name;
+  public wrapCall = <T = any>(contextName: string, func: any, ...args: any): T => {
     const subLogger = this.getSubLogger(contextName, this.context);
     try {
-      subLogger.info('request', { action: func.name, data: { args } });
-      const response = func.apply(this, args);
+      subLogger.info('request', { action: contextName, data: { args } });
+      const response = func.apply(func, args);
 
-      Promise.resolve(response).then((data) => {
-        subLogger.info('response', { action: contextName, data: { return: data || response } });
-      }).catch((e) => { // for async functions
-        subLogger.error('error', { action: contextName, err: e });
-        throw e;
-      }).finally(() => {
-        subLogger.finish();
-      });
+      Promise.resolve(response)
+        .then((data) => {
+          subLogger.info('response', { action: contextName, data: { return: data || response } });
+        })
+        .catch((e) => {
+          // for async functions
+          subLogger.error('error', { action: contextName, err: e });
+          throw e;
+        })
+        .finally(() => {
+          subLogger.finish();
+        });
 
       return response;
-    } catch (e) { // in case decorated function not async
+    } catch (e) {
+      // in case decorated function not async
       subLogger.error('error', { action: contextName, err: e });
       throw e;
     }
-  }
+  };
 
   /**
    * Useful for getting nested logs.
@@ -223,7 +229,7 @@ export default class Logger {
    * modifies original value.
    */
   public static replaceBufferRecursive(arg: any, depth = 3) {
-    if (Buffer.isBuffer(arg)) return "Buffer";
+    if (Buffer.isBuffer(arg)) return 'Buffer';
 
     if (depth > 0) {
       if (_.isObject(arg)) {

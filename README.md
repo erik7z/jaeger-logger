@@ -60,4 +60,4 @@ subLog.info('response', { data: { result: 'some result' } }).finish()
 logger.finish()
 ```
 ### Publishing notes
-- dont forget to run build!
+- `npm run prepublishOnly` before pushing to git
