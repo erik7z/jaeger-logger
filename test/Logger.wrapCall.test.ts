@@ -68,7 +68,7 @@ describe("Logger.wrapCall", () => {
     }
 
     try {
-      logger.wrapCall("fakeCall", fakeFunc, 1, 2);
+      await logger.wrapCall("fakeCall", fakeFunc, 1, 2);
     } catch (e: any) {
       stack = e.stack;
       message = e.message;
@@ -163,7 +163,7 @@ describe("Logger.wrapCall", () => {
     const logger = new Logger("test", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
 
     class FakeClass {
-      constructor(private a: number) {}
+      constructor(private a: number) { }
 
       fakeFunc(b: number) {
         return this.a + b;
@@ -179,8 +179,7 @@ describe("Logger.wrapCall", () => {
     await logger.finish();
   });
 
-  // TODO: fix this test (jest not handling properly errors thrown in async functions)
-  test.skip("Should properly handle sync function errors in sub log", async () => {
+  test("Should properly handle sync function errors in sub log", async () => {
     const logger = new Logger("test", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
 
     const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, "getSubContext");
@@ -188,8 +187,7 @@ describe("Logger.wrapCall", () => {
 
     const errMessage = "God damn!";
 
-    const fakeFunc = async (a: number, b: number) => new Promise((_, reject) => reject(errMessage));
-
+    const fakeFunc = async (a: number, b: number) => new Promise((_, reject) => reject(errMessage))
     await expect(async () => {
       await logger.wrapCall("fakeCall", fakeFunc, 1, 2);
     }).rejects.toEqual(errMessage);
@@ -226,4 +224,19 @@ describe("Logger.wrapCall", () => {
 
     await logger.finish();
   });
+
+  test('Should return promise if function is async', async () => {
+    const logger = new Logger("test", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
+    const sum = async (a: number, b: number): Promise<number> => a + b;
+
+    const promiseRes = logger.wrapCall("summing", sum, 1, 2)
+    expect(promiseRes instanceof Promise).toBe(true)
+
+    const res = await promiseRes
+    expect(res).toEqual(3)
+
+
+
+    await logger.finish();
+  })
 });

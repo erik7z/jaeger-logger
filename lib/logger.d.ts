@@ -59,7 +59,7 @@ export default class Logger {
      * @param func - function to be called
      * @param args - arguments for provided function
      */
-    wrapCall: <T = any>(contextName: string, func: any, ...args: any) => T;
+    wrapCall: <T = any>(contextName: string, func: any, ...args: any) => T | Promise<T>;
     /**
      * Useful for getting nested logs.
      * Returns a new Logger instance with the given name and parentContext.
