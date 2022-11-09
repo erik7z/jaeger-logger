@@ -151,29 +151,38 @@ export default class Logger {
    * @param func - function to be called
    * @param args - arguments for provided function
    */
-  public wrapCall = <T = any>(contextName: string, func: any, ...args: any): T => {
+  public wrapCall = <T = any>(contextName: string, func: any, ...args: any): T | Promise<T> => {
     const subLogger = this.getSubLogger(contextName, this.context);
+
     try {
       subLogger.info('request', { action: contextName, data: { args } });
       const response = func.apply(func, args);
 
-      Promise.resolve(response)
+      const promise = Promise.resolve(response)
         .then((data) => {
-          subLogger.info('response', { action: contextName, data: { return: data || response } });
+          subLogger.info('response', { action: contextName, data: { return: data || response } })
+
+          return data;
         })
         .catch((e) => {
           // for async functions
           subLogger.error('error', { action: contextName, err: e });
+
           throw e;
         })
         .finally(() => {
           subLogger.finish();
         });
 
+      if (response instanceof Promise === true) {
+        return promise
+      }
+
       return response;
     } catch (e) {
       // in case decorated function not async
       subLogger.error('error', { action: contextName, err: e });
+
       throw e;
     }
   };
