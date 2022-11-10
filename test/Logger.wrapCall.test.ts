@@ -5,9 +5,11 @@ describe("Logger.wrapCall", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
-
-  test("Should wrap function call request and response in sub log", async () => {
-    const logger = new Logger("test1", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
+  test('Should wrap function call request and response in sub log', async () => {
+    const logger = new Logger('test1', {
+      createNewContext: true,
+      config: { writeToConsole: false, tracerConfig: { useTracer: true } },
+    });
 
     const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, "getSubContext");
     const TracerSendSpy = jest.spyOn(Tracer.prototype, "send");
