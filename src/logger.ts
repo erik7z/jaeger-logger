@@ -119,7 +119,7 @@ export default class Logger {
   /**
    * logging db queries (only sequelize)
    */
-  db = (query: string = '', data: any = {}) => {
+  db = (query = '', data: any = {}) => {
     const dbInstance = data.model?.name ?? '';
     const queryType = data.type ?? '';
     const subLog = this.getSubLogger(`sequelize${dbInstance ? ': ' + dbInstance : ''}`, this.context);
@@ -136,6 +136,7 @@ export default class Logger {
   /**
    * Static error logger to use without 'new'
    * logs an error and throws it
+   *
    * @deprecated **uses default config where connection to jaeger not set, so tracer will not work**
    */
   public static logError(e: Error, ctx: any | ILogData, serviceName = 'Unknown service'): void {
@@ -147,6 +148,7 @@ export default class Logger {
   /**
    * Wrap function call input/output
    * Creates sub span in logger context and records function request/response
+   *
    * @param contextName - name of the span
    * @param func - function to be called
    * @param args - arguments for provided function
@@ -160,7 +162,7 @@ export default class Logger {
 
       const promise = Promise.resolve(response)
         .then((data) => {
-          subLogger.info('response', { action: contextName, data: { return: data || response } })
+          subLogger.info('response', { action: contextName, data: { return: data || response } });
 
           return data;
         })
@@ -175,7 +177,7 @@ export default class Logger {
         });
 
       if (response instanceof Promise === true) {
-        return promise
+        return promise;
       }
 
       return response;
@@ -198,6 +200,7 @@ export default class Logger {
 
   /**
    * It takes an array of arguments and returns a new array of arguments with all the heavy objects removed
+   *
    * @param {any[]} args - any[] - the arguments to be simplified
    * @param {string[]} excludeClasses - An array of class names that you want to exclude from the logging.
    * @returns An array of objects

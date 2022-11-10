@@ -49,12 +49,14 @@ export default class Logger {
     /**
      * Static error logger to use without 'new'
      * logs an error and throws it
+     *
      * @deprecated **uses default config where connection to jaeger not set, so tracer will not work**
      */
     static logError(e: Error, ctx: any | ILogData, serviceName?: string): void;
     /**
      * Wrap function call input/output
      * Creates sub span in logger context and records function request/response
+     *
      * @param contextName - name of the span
      * @param func - function to be called
      * @param args - arguments for provided function
@@ -68,6 +70,7 @@ export default class Logger {
     getSubLogger(name: string, parentContext?: opentracing.Span | undefined): Logger;
     /**
      * It takes an array of arguments and returns a new array of arguments with all the heavy objects removed
+     *
      * @param {any[]} args - any[] - the arguments to be simplified
      * @param {string[]} excludeClasses - An array of class names that you want to exclude from the logging.
      * @returns An array of objects
