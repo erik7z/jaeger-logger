@@ -27,7 +27,7 @@ let tracer: Tracer;
 /**
  * Singleton for returning instance of the Tracer class.
  */
-export const getDefaultTracer = (serviceName: string, config: Partial<ITracerConfig> = {}) => {
+export const getDefaultTracer = (serviceName: string, config: Partial<ITracerConfig> = {}): Tracer => {
   if (!tracer) tracer = new Tracer(serviceName, config);
   return tracer;
 };
@@ -51,7 +51,7 @@ export default class Tracer {
       {
         logger: {
           info(msg: string) {
-            console.info('TRACER INFO ', msg);
+            console.info('TRACER INFO', msg);
           },
           error(msg: string) {
             console.error('TRACER ERROR', msg);
@@ -65,7 +65,7 @@ export default class Tracer {
    * Creates a new child span with the given name and parent context,
    * and adds a tag to the span with the service name
    */
-  getSubContext(contextName: string, parentContext?: LogContext): LogContext | undefined {
+  public getSubContext(contextName: string, parentContext?: LogContext): LogContext | undefined {
     if (!contextName) return;
     const subContext: LogContext = this.client.startSpan(contextName, {
       ...(parentContext ? { childOf: parentContext } : {}),
@@ -75,7 +75,7 @@ export default class Tracer {
   }
 
   // TODO: add tests for proper message output
-  write(action: string, logData: ILogData, context: LogContext) {
+  public write(action: string, logData: ILogData, context: LogContext): void {
     if (!this.config.useTracer) return;
     const { type, message, data, err } = logData;
     if (type === 'error') context.setTag(opentracing.Tags.ERROR, true);
@@ -105,7 +105,7 @@ export default class Tracer {
     });
   }
 
-  send(context: LogContext, keyValuePairs: { [key: string]: any }, timestamp?: number): LogContext {
+  public send(context: LogContext, keyValuePairs: { [key: string]: any }, timestamp?: number): LogContext {
     context.log(keyValuePairs, timestamp);
     return context;
   }

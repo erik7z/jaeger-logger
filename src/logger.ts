@@ -59,11 +59,11 @@ export default class Logger {
   /**
    * Every logger context should be closed at the end, otherwise spans are not saved.
    */
-  finish() {
+  public finish(): void {
     if (this.context) this.context.finish();
   }
 
-  write(
+  public write(
     action: string,
     logData: ILogData = { type: 'info', message: '', data: null, queNumber: 0 },
     context = this.context,
@@ -84,11 +84,11 @@ export default class Logger {
   private consoleWrite(type: 'error' | 'info', message: string, details: string, data: any, err: any): void {
     if (!this.config.writeToConsole) return;
 
-    let color = '\x1b[33m%s\x1b[0m : \x1b[36m%s\x1b[0m';
+    let color = '\u001B[33m%s\u001B[0m : \u001B[36m%s\u001B[0m';
     if (type === 'info') {
       console.log(color, details, message || '');
     } else {
-      color = '\x1b[31m%s\x1b[0m';
+      color = '\u001B[31m%s\u001B[0m';
       details = '';
       console.error(color, details, message || '', err);
     }
@@ -98,11 +98,15 @@ export default class Logger {
     }
   }
 
-  info(action: string, logData: ILogData = { message: '', data: null, queNumber: 0 }, context?: LogContext): Logger {
+  public info(
+    action: string,
+    logData: ILogData = { message: '', data: null, queNumber: 0 },
+    context?: LogContext,
+  ): Logger {
     return this.write(action, { ...logData, type: 'info' }, context);
   }
 
-  error(
+  public error(
     actionOrError: string | Error | unknown,
     logData: ILogData = { message: '', data: null, queNumber: 0 },
     context?: LogContext,
@@ -119,7 +123,7 @@ export default class Logger {
   /**
    * logging db queries (only sequelize)
    */
-  db = (query = '', data: any = {}) => {
+  public db = (query = '', data: any = {}): void => {
     const dbInstance = data.model?.name ?? '';
     const queryType = data.type ?? '';
     const subLog = this.getSubLogger(`sequelize${dbInstance ? ': ' + dbInstance : ''}`, this.context);
@@ -222,7 +226,7 @@ export default class Logger {
    * finds arg nested property by provided class name and replaces it with class name (string).
    * modifies original value.
    */
-  public static replaceClassesRecursive(arg: any, classNames: string[], depth = 3) {
+  public static replaceClassesRecursive(arg: any, classNames: string[], depth = 3): any {
     if (depth <= 0) return arg;
     if (_.isObject(arg) && classNames.includes(arg.constructor?.name)) {
       return arg.constructor?.name;
@@ -240,16 +244,14 @@ export default class Logger {
    * finds Buffers in args recursively and replaces them with string 'Buffer'.
    * modifies original value.
    */
-  public static replaceBufferRecursive(arg: any, depth = 3) {
+  public static replaceBufferRecursive(arg: any, depth = 3): any {
     if (Buffer.isBuffer(arg)) return 'Buffer';
 
-    if (depth > 0) {
-      if (_.isObject(arg)) {
-        _.forIn(arg, (value, key) => {
-          // @ts-ignore
-          arg[key] = Logger.replaceBufferRecursive(value, depth - 1);
-        });
-      }
+    if (depth > 0 && _.isObject(arg)) {
+      _.forIn(arg, (value, key) => {
+        // @ts-ignore
+        arg[key] = Logger.replaceBufferRecursive(value, depth - 1);
+      });
     }
 
     return arg;

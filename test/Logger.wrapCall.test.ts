@@ -15,7 +15,7 @@ describe('Logger.wrapCall', () => {
     const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, 'getSubContext');
     const TracerSendSpy = jest.spyOn(Tracer.prototype, 'send');
 
-    function fakeFunc(a: number, b: number) {
+    function fakeFunc(a: number, b: number): number {
       return a + b;
     }
 
@@ -66,7 +66,7 @@ describe('Logger.wrapCall', () => {
     let message = '';
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    function fakeFunc(a: number, b: number) {
+    function fakeFunc(a: number, b: number): void {
       throw new Error('Oh crap!');
     }
 
@@ -118,7 +118,7 @@ describe('Logger.wrapCall', () => {
     const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, 'getSubContext');
     const TracerSendSpy = jest.spyOn(Tracer.prototype, 'send');
 
-    async function fakeFunc(a: number, b: number) {
+    async function fakeFunc(a: number, b: number): Promise<unknown> {
       return new Promise((resolve) => {
         setTimeout(() => {
           resolve(a + b);
@@ -167,7 +167,7 @@ describe('Logger.wrapCall', () => {
     class FakeClass {
       constructor(private a: number) {}
 
-      fakeFunc(b: number) {
+      public fakeFunc(b: number): number {
         return this.a + b;
       }
     }
@@ -193,7 +193,7 @@ describe('Logger.wrapCall', () => {
     const errMessage = 'God damn!';
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const fakeFunc = async (a: number, b: number) => new Promise((_, reject) => reject(errMessage));
+    const fakeFunc = async (a: number, b: number): Promise<unknown> => new Promise((_, reject) => reject(errMessage));
     await expect(async () => {
       await logger.wrapCall('fakeCall', fakeFunc, 1, 2);
     }).rejects.toEqual(errMessage);
