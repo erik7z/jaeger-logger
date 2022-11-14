@@ -1,7 +1,12 @@
 import Logger from "../src/logger";
 describe("Logger.error", () => {
+  afterAll(() => {
+    const logger = new Logger("error-logger", { config: { writeToConsole: true, tracerConfig: { useTracer: false } } });
+    logger.tracer.client.close()
+
+  })
   test("Should use console.error if logging to console enabled", async () => {
-    const logger = new Logger("test", { config: { writeToConsole: true, tracerConfig: { useTracer: false } } });
+    const logger = new Logger("error-logger", { config: { writeToConsole: true, tracerConfig: { useTracer: false } } });
     const consoleSpy = jest.spyOn(console, "error");
 
     logger.error("error", { err: "test error output to console" });
@@ -11,7 +16,7 @@ describe("Logger.error", () => {
   });
 
   test("Should accept error as a first parameter, and properly log it", async () => {
-    const logger = new Logger("test", { config: { writeToConsole: false, tracerConfig: { useTracer: false } } });
+    const logger = new Logger("error-logger", { config: { writeToConsole: false, tracerConfig: { useTracer: false } } });
     const loggerSpy = jest.spyOn(logger, "write");
 
     const err = new Error("Oh crap!");
