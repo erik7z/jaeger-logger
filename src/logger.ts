@@ -170,11 +170,11 @@ export default class Logger {
 
           return data;
         })
-        .catch((e) => {
+        .catch((error) => {
           // for async functions
-          subLogger.error('error', { action: contextName, err: e });
+          subLogger.error('error', { action: contextName, err: error });
 
-          throw e;
+          throw error;
         })
         .finally(() => {
           subLogger.finish();
@@ -185,11 +185,11 @@ export default class Logger {
       }
 
       return response;
-    } catch (e) {
+    } catch (error) {
       // in case decorated function not async
-      subLogger.error('error', { action: contextName, err: e });
+      subLogger.error('error', { action: contextName, err: error });
 
-      throw e;
+      throw error;
     }
   };
 

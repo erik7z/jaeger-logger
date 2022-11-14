@@ -72,9 +72,9 @@ describe('Logger.wrapCall', () => {
 
     try {
       await logger.wrapCall('fakeCall', fakeFunc, 1, 2);
-    } catch (e: any) {
-      stack = e.stack;
-      message = e.message;
+    } catch (error: any) {
+      stack = error.stack;
+      message = error.message;
     }
 
     // subcontext "fakeCall" has been created
