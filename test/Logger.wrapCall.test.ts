@@ -5,8 +5,13 @@ describe("Logger.wrapCall", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
+  afterAll(() => {
+    const logger = new Logger("wrapCall-logger", { config: { writeToConsole: true, tracerConfig: { useTracer: false } } });
+    logger.tracer.client.close()
+
+  })
   test('Should wrap function call request and response in sub log', async () => {
-    const logger = new Logger('test1', {
+    const logger = new Logger('wrapCall-logger', {
       createNewContext: true,
       config: { writeToConsole: false, tracerConfig: { useTracer: true } },
     });
@@ -57,7 +62,7 @@ describe("Logger.wrapCall", () => {
   });
 
   test("Should properly handle function errors in sub log", async () => {
-    const logger = new Logger("test", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
+    const logger = new Logger("wrapCall-logger", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
 
     const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, "getSubContext");
     const TracerSendSpy = jest.spyOn(Tracer.prototype, "send");
@@ -109,10 +114,11 @@ describe("Logger.wrapCall", () => {
     });
 
     await logger.finish();
+
   });
 
   test("Should properly wrap async function call request and response in sub log", async () => {
-    const logger = new Logger("test", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
+    const logger = new Logger("wrapCall-logger", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
 
     const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, "getSubContext");
     const TracerSendSpy = jest.spyOn(Tracer.prototype, "send");
@@ -159,10 +165,11 @@ describe("Logger.wrapCall", () => {
       }
     });
     await logger.finish();
+
   });
 
   test("Should properly handle wrapped function 'this' context", async () => {
-    const logger = new Logger("test", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
+    const logger = new Logger("wrapCall-logger", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
 
     class FakeClass {
       constructor(private a: number) { }
@@ -182,7 +189,7 @@ describe("Logger.wrapCall", () => {
   });
 
   test("Should properly handle sync function errors in sub log", async () => {
-    const logger = new Logger("test", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
+    const logger = new Logger("wrapCall-logger", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
 
     const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, "getSubContext");
     const TracerSendSpy = jest.spyOn(Tracer.prototype, "send");
@@ -228,7 +235,7 @@ describe("Logger.wrapCall", () => {
   });
 
   test('Should return promise if function is async', async () => {
-    const logger = new Logger("test", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
+    const logger = new Logger("wrapCall-logger", { createNewContext: true, config: { writeToConsole: false, tracerConfig: { useTracer: true } } });
     const sum = async (a: number, b: number): Promise<number> => a + b;
 
     const promiseRes = logger.wrapCall("summing", sum, 1, 2)
