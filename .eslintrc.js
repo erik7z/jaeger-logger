@@ -19,15 +19,6 @@ module.exports = {
   plugins: ['eslint-plugin-jsdoc', '@typescript-eslint', 'prettier', 'unicorn'],
   overrides: [],
   rules: {
-    'unicorn/prevent-abbreviations': 'off',
-    'unicorn/consistent-function-scoping': 'off',
-    'unicorn/no-object-as-default-parameter': 'off',
-    'unicorn/prefer-module': 'off',
-    'unicorn/filename-case': 'off',
-    'unicorn/no-null': 'off',
-    'unicorn/no-nested-ternary': 'off',
-    '@typescript-eslint/ban-ts-comment': 'off',
-    'prettier/prettier': 'warn',
     '@typescript-eslint/array-type': [
       'warn',
       {

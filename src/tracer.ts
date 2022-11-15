@@ -50,11 +50,11 @@ export default class Tracer {
       },
       {
         logger: {
-          info(msg: string) {
-            console.info('TRACER INFO', msg);
+          info(message: string) {
+            console.info('TRACER INFO', message);
           },
-          error(msg: string) {
-            console.error('TRACER ERROR', msg);
+          error(message: string) {
+            console.error('TRACER ERROR', message);
           },
         },
       },
@@ -93,6 +93,7 @@ export default class Tracer {
                 ...(err.code ? { code: err.code } : {}),
                 ...(err.status ? { status: err.status } : {}),
                 ...(err.statusCode ? { statusCode: err.statusCode } : {}),
+                // eslint-disable-next-line unicorn/no-nested-ternary
                 ...(err.message ? { message: err.message } : typeof err === 'string' ? { message: err } : {}),
                 ...(err.customMessage ? { customMessage: err.customMessage } : {}),
                 ...(err.shortMessage ? { shortMessage: err.shortMessage } : {}),
