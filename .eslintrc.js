@@ -51,5 +51,21 @@ module.exports = {
       },
     ],
     '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/ban-types': [
+      'error',
+      {
+        types: {
+          String: true,
+          Boolean: true,
+          Number: true,
+          Symbol: true,
+          '{}': true,
+          Object: true,
+          object: true,
+          Function: false,
+        },
+        extendDefaults: true,
+      },
+    ],
   },
 };

@@ -8,7 +8,7 @@ export type ILogData = {
   queNumber?: number;
   type?: 'error' | 'info';
   message?: string;
-  data?: { args?: any[]; query?: string; model?: { name: string }; type?: string; instance?: { dataValues: any } };
+  data?: { args?: any[]; query?: string; model?: { name: string }; type?: string; instance?: { dataValues: unknown } };
   err?: any;
 };
 
@@ -158,9 +158,9 @@ export default class Logger {
    * @param func - function to be called
    * @param args - arguments for provided function
    */
-  public wrapCall = <T = any>(
+  public wrapCall = <T = unknown>(
     contextName: string,
-    function_: any,
+    function_: Function,
     ...arguments_: any
   ): T | Promise<T> | Promise<ILogData['data']> => {
     const subLogger = this.getSubLogger(contextName, this.context);
@@ -214,9 +214,10 @@ export default class Logger {
    * @param {string[]} excludeClasses - An array of class names that you want to exclude from the logging.
    * @returns An array of objects
    */
-  public static simplifyArgs(arguments_: any, excludeClasses: string[] = []): any[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public static simplifyArgs(arguments_: any, excludeClasses: string[] = []): unknown[] {
     // TODO: filter out objects by size
-    return (arguments_ || []).map((argument: any) => {
+    return (arguments_ || []).map((argument: unknown) => {
       if (argument instanceof Object || argument instanceof Buffer) {
         argument = _.cloneDeep(argument);
         argument = Logger.replaceBufferRecursive(argument);
@@ -253,8 +254,7 @@ export default class Logger {
    * finds Buffers in args recursively and replaces them with string 'Buffer'.
    * modifies original value.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public static replaceBufferRecursive(argument: any, depth = 3): any {
+  public static replaceBufferRecursive(argument: unknown, depth = 3): unknown {
     if (Buffer.isBuffer(argument)) return 'Buffer';
 
     if (depth > 0 && _.isObject(argument)) {
