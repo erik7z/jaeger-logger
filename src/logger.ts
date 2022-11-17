@@ -4,11 +4,11 @@ import deepmerge from 'deepmerge';
 import * as _ from 'lodash';
 
 export type ILogData = {
-  [key: string]: any;
-  queNumber?: any;
+  [key: string]: unknown;
+  queNumber?: number;
   type?: 'error' | 'info';
   message?: string;
-  data?: any;
+  data?: { args?: any[]; query?: string; model?: { name: string }; type?: string; instance?: { dataValues: any } };
   err?: any;
 };
 
@@ -79,7 +79,14 @@ export default class Logger {
   /**
    * Format & Log output to the console If the config says so
    */
-  private consoleWrite(type: 'error' | 'info', message: string, details: string, data: any, error: any): void {
+  private consoleWrite(
+    type: 'error' | 'info',
+    message: string,
+    details: string,
+    data: ILogData['data'],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error: any,
+  ): void {
     if (!this.config.writeToConsole) return;
 
     let color = '\u001B[33m%s\u001B[0m : \u001B[36m%s\u001B[0m';
@@ -117,7 +124,7 @@ export default class Logger {
   /**
    * logging db queries (only sequelize)
    */
-  public db = (query = '', data: any = {}): void => {
+  public db = (query = '', data: ILogData['data'] = {}): void => {
     const databaseInstance = data.model?.name ?? '';
     const queryType = data.type ?? '';
     const subLog = this.getSubLogger(`sequelize${databaseInstance ? ': ' + databaseInstance : ''}`, this.context);
@@ -137,7 +144,7 @@ export default class Logger {
    *
    * @deprecated **uses default config where connection to jaeger not set, so tracer will not work**
    */
-  public static logError(error: Error, context: any | ILogData, serviceName = 'Unknown service'): void {
+  public static logError(error: Error, context: ILogData, serviceName = 'Unknown service'): void {
     const logger = new Logger(serviceName);
     logger.error(error.message, context);
     throw error;
@@ -151,7 +158,11 @@ export default class Logger {
    * @param func - function to be called
    * @param args - arguments for provided function
    */
-  public wrapCall = <T = any>(contextName: string, function_: any, ...arguments_: any): T | Promise<T> => {
+  public wrapCall = <T = any>(
+    contextName: string,
+    function_: any,
+    ...arguments_: any
+  ): T | Promise<T> | Promise<ILogData['data']> => {
     const subLogger = this.getSubLogger(contextName, this.context);
 
     try {
@@ -159,8 +170,8 @@ export default class Logger {
       const response = function_.apply(function_, arguments_);
 
       const promise = Promise.resolve(response)
-        .then((data) => {
-          subLogger.info('response', { action: contextName, data: { return: data || response } });
+        .then((data: ILogData['data']) => {
+          subLogger.info('response', { action: contextName, data: data || response });
 
           return data;
         })
@@ -203,9 +214,9 @@ export default class Logger {
    * @param {string[]} excludeClasses - An array of class names that you want to exclude from the logging.
    * @returns An array of objects
    */
-  public static simplifyArgs(arguments_: any[], excludeClasses: string[] = []): any[] {
+  public static simplifyArgs(arguments_: any, excludeClasses: string[] = []): any[] {
     // TODO: filter out objects by size
-    return (arguments_ || []).map((argument) => {
+    return (arguments_ || []).map((argument: any) => {
       if (argument instanceof Object || argument instanceof Buffer) {
         argument = _.cloneDeep(argument);
         argument = Logger.replaceBufferRecursive(argument);
@@ -220,17 +231,21 @@ export default class Logger {
    * finds arg nested property by provided class name and replaces it with class name (string).
    * modifies original value.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static replaceClassesRecursive(argument: any, classNames: string[], depth = 3): any {
     if (depth <= 0) return argument;
+
     if (_.isObject(argument) && classNames.includes(argument.constructor?.name)) {
       return argument.constructor?.name;
     }
+
     _.forIn(argument, (value, key) => {
       if (_.isObject(value)) {
         if (classNames.includes(value.constructor?.name)) argument[key] = value.constructor?.name;
         else return Logger.replaceClassesRecursive(value, classNames, depth - 1);
       }
     });
+
     return argument;
   }
 
@@ -238,6 +253,7 @@ export default class Logger {
    * finds Buffers in args recursively and replaces them with string 'Buffer'.
    * modifies original value.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static replaceBufferRecursive(argument: any, depth = 3): any {
     if (Buffer.isBuffer(argument)) return 'Buffer';
 

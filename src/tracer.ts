@@ -106,7 +106,7 @@ export default class Tracer {
     });
   }
 
-  public send(context: LogContext, keyValuePairs: { [key: string]: any }, timestamp?: number): LogContext {
+  public send(context: LogContext, keyValuePairs: { [key: string]: unknown }, timestamp?: number): LogContext {
     context.log(keyValuePairs, timestamp);
     return context;
   }

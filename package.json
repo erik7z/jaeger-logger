@@ -13,7 +13,7 @@
   },
   "scripts": {
     "prepublishOnly": "npm test && npm run lint && npm run format && npm run build",
-    "lint": "eslint -c .eslintrc.js --ext .ts ./src",
+    "lint": "eslint . -c .eslintrc.js --ext .ts ",
     "lint:fix": "npm run lint -- --fix",
     "format": "./node_modules/.bin/prettier --write \"src/**/*.ts\"",
     "build": "./node_modules/typescript/bin/tsc -p tsconfig.build.json",

@@ -5,9 +5,14 @@ describe('Logger.wrapCall', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
-
+  afterAll(() => {
+    const logger = new Logger('wrapCall-logger', {
+      config: { writeToConsole: true, tracerConfig: { useTracer: false } },
+    });
+    logger.tracer.client.close();
+  });
   test('Should wrap function call request and response in sub log', async () => {
-    const logger = new Logger('test1', {
+    const logger = new Logger('wrapCall-logger', {
       createNewContext: true,
       config: { writeToConsole: false, tracerConfig: { useTracer: true } },
     });
@@ -15,12 +20,13 @@ describe('Logger.wrapCall', () => {
     const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, 'getSubContext');
     const TracerSendSpy = jest.spyOn(Tracer.prototype, 'send');
 
-    function fakeFunc(a: number, b: number): number {
+    // eslint-disable-next-line unicorn/consistent-function-scoping
+    function fakeFunction(a: number, b: number): number {
       return a + b;
     }
 
-    const res = await logger.wrapCall('fakeCall', fakeFunc, 1, 2);
-    expect(res).toEqual(3);
+    const result = await logger.wrapCall('fakeCall', fakeFunction, 1, 2);
+    expect(result).toEqual(3);
 
     // subcontext "fakeCall" has been created
     expect(TracerGetSubContextSpy).toHaveBeenCalled();
@@ -45,16 +51,14 @@ describe('Logger.wrapCall', () => {
     expect(TracerSendSpy.mock.calls[1][1]).toStrictEqual({
       action: 'response',
       details: {
-        data: {
-          return: 3,
-        },
+        data: 3,
       },
     });
     logger.finish();
   });
 
   test('Should properly handle function errors in sub log', async () => {
-    const logger = new Logger('test', {
+    const logger = new Logger('wrapCall-logger', {
       createNewContext: true,
       config: { writeToConsole: false, tracerConfig: { useTracer: true } },
     });
@@ -65,16 +69,18 @@ describe('Logger.wrapCall', () => {
     let stack = '';
     let message = '';
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    function fakeFunc(a: number, b: number): void {
+    // eslint-disable-next-line unicorn/consistent-function-scoping
+    function fakeFunction(): void {
       throw new Error('Oh crap!');
     }
 
     try {
-      await logger.wrapCall('fakeCall', fakeFunc, 1, 2);
-    } catch (error: any) {
-      stack = error.stack;
-      message = error.message;
+      await logger.wrapCall('fakeCall', fakeFunction, 1, 2);
+    } catch (error) {
+      if (error instanceof Error) {
+        stack = error.stack ?? '';
+        message = error.message;
+      }
     }
 
     // subcontext "fakeCall" has been created
@@ -106,11 +112,11 @@ describe('Logger.wrapCall', () => {
       },
     });
 
-    logger.finish();
+    await logger.finish();
   });
 
   test('Should properly wrap async function call request and response in sub log', async () => {
-    const logger = new Logger('test', {
+    const logger = new Logger('wrapCall-logger', {
       createNewContext: true,
       config: { writeToConsole: false, tracerConfig: { useTracer: true } },
     });
@@ -118,7 +124,7 @@ describe('Logger.wrapCall', () => {
     const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, 'getSubContext');
     const TracerSendSpy = jest.spyOn(Tracer.prototype, 'send');
 
-    async function fakeFunc(a: number, b: number): Promise<unknown> {
+    async function fakeFunction(a: number, b: number): Promise<unknown> {
       return new Promise((resolve) => {
         setTimeout(() => {
           resolve(a + b);
@@ -126,8 +132,8 @@ describe('Logger.wrapCall', () => {
       });
     }
 
-    const res = await logger.wrapCall('fakeCall', fakeFunc, 1, 2);
-    expect(res).toEqual(3);
+    const result = await logger.wrapCall('fakeCall', fakeFunction, 1, 2);
+    expect(result).toEqual(3);
 
     // subcontext "fakeCall" has been created
     expect(TracerGetSubContextSpy).toHaveBeenCalled();
@@ -150,16 +156,14 @@ describe('Logger.wrapCall', () => {
     expect(TracerSendSpy.mock.calls[1][1]).toStrictEqual({
       action: 'response',
       details: {
-        data: {
-          return: 3,
-        },
+        data: 3,
       },
     });
-    logger.finish();
+    await logger.finish();
   });
 
   test("Should properly handle wrapped function 'this' context", async () => {
-    const logger = new Logger('test', {
+    const logger = new Logger('wrapCall-logger', {
       createNewContext: true,
       config: { writeToConsole: false, tracerConfig: { useTracer: true } },
     });
@@ -174,15 +178,15 @@ describe('Logger.wrapCall', () => {
 
     const fake = new FakeClass(3);
 
-    const res = await logger.wrapCall('fakeCall', fake.fakeFunc.bind(fake), 4);
+    const result = await logger.wrapCall('fakeCall', fake.fakeFunc.bind(fake), 4);
 
-    expect(res).toEqual(7);
+    expect(result).toEqual(7);
 
     logger.finish();
   });
 
   test('Should properly handle sync function errors in sub log', async () => {
-    const logger = new Logger('test', {
+    const logger = new Logger('wrapCall-logger', {
       createNewContext: true,
       config: { writeToConsole: false, tracerConfig: { useTracer: true } },
     });
@@ -190,13 +194,14 @@ describe('Logger.wrapCall', () => {
     const TracerGetSubContextSpy = jest.spyOn(Tracer.prototype, 'getSubContext');
     const TracerSendSpy = jest.spyOn(Tracer.prototype, 'send');
 
-    const errMessage = 'God damn!';
+    const errorMessage = 'God damn!';
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const fakeFunc = async (a: number, b: number): Promise<unknown> => new Promise((_, reject) => reject(errMessage));
+    const fakeFunction = async (a: number, b: number): Promise<unknown> =>
+      new Promise((_, reject) => reject(errorMessage));
     await expect(async () => {
-      await logger.wrapCall('fakeCall', fakeFunc, 1, 2);
-    }).rejects.toEqual(errMessage);
+      await logger.wrapCall('fakeCall', fakeFunction, 1, 2);
+    }).rejects.toEqual(errorMessage);
 
     // subcontext "fakeCall" has been created
     expect(TracerGetSubContextSpy).toHaveBeenCalled();
@@ -218,7 +223,7 @@ describe('Logger.wrapCall', () => {
       action: 'error',
       details: {
         err: {
-          message: errMessage,
+          message: errorMessage,
         },
         isError: true,
       },
@@ -228,17 +233,17 @@ describe('Logger.wrapCall', () => {
   });
 
   test('Should return promise if function is async', async () => {
-    const logger = new Logger('test', {
+    const logger = new Logger('wrapCall-logger', {
       createNewContext: true,
       config: { writeToConsole: false, tracerConfig: { useTracer: true } },
     });
     const sum = async (a: number, b: number): Promise<number> => a + b;
 
-    const promiseRes = logger.wrapCall('summing', sum, 1, 2);
-    expect(promiseRes instanceof Promise).toBe(true);
+    const promiseResult = logger.wrapCall('summing', sum, 1, 2);
+    expect(promiseResult instanceof Promise).toBe(true);
 
-    const res = await promiseRes;
-    expect(res).toEqual(3);
+    const result = await promiseResult;
+    expect(result).toEqual(3);
 
     logger.finish();
   });

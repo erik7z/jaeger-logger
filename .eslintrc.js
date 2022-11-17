@@ -5,10 +5,10 @@ module.exports = {
   },
   ignorePatterns: ['lib/**/*'],
   extends: [
-    'plugin:prettier/recommended',
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:unicorn/recommended',
+    'plugin:prettier/recommended',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -19,6 +19,7 @@ module.exports = {
   plugins: ['eslint-plugin-jsdoc', '@typescript-eslint', 'prettier', 'unicorn'],
   overrides: [],
   rules: {
+    'unicorn/prefer-module': 'off',
     '@typescript-eslint/array-type': [
       'warn',
       {
@@ -49,6 +50,6 @@ module.exports = {
         },
       },
     ],
-    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-explicit-any': 'warn',
   },
 };

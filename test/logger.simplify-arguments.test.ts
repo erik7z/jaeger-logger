@@ -1,4 +1,5 @@
 import Logger from '../src/logger';
+
 describe('simplifyArgs', () => {
   test('Should replace provided classes with string class name', () => {
     class FakeClassA {
@@ -12,10 +13,10 @@ describe('simplifyArgs', () => {
     const fca = new FakeClassA(1, 'a');
     const fcb = new FakeClassB(1, 'b');
 
-    const args = [1, fca, 2, fcb];
-    const newArgs = Logger.simplifyArgs(args, ['FakeClassA']);
+    const arguments_ = [1, fca, 2, fcb];
+    const newArguments = Logger.simplifyArgs(arguments_, ['FakeClassA']);
 
-    expect(newArgs).toStrictEqual([1, 'FakeClassA', 2, fcb]);
+    expect(newArguments).toStrictEqual([1, 'FakeClassA', 2, fcb]);
   });
 
   test('Should replace nested provided classes with string class name', async () => {
@@ -50,10 +51,10 @@ describe('simplifyArgs', () => {
       },
     };
 
-    const args = [1, nested, 2, fcb];
-    const newArgs = Logger.simplifyArgs(args, ['FakeClassA']);
+    const arguments_ = [1, nested, 2, fcb];
+    const newArguments = Logger.simplifyArgs(arguments_, ['FakeClassA']);
 
-    expect(newArgs).toStrictEqual([1, nestedReplaced, 2, fcb]);
+    expect(newArguments).toStrictEqual([1, nestedReplaced, 2, fcb]);
   });
 
   test('Should replace args of type Buffer', () => {
@@ -65,10 +66,10 @@ describe('simplifyArgs', () => {
 
     const fcb = new FakeClassB(1, 'b');
 
-    const args = [1, buff, 2, fcb];
-    const newArgs = Logger.simplifyArgs(args, ['FakeClassA']);
+    const arguments_ = [1, buff, 2, fcb];
+    const newArguments = Logger.simplifyArgs(arguments_, ['FakeClassA']);
 
-    expect(newArgs).toStrictEqual([1, 'Buffer', 2, fcb]);
+    expect(newArguments).toStrictEqual([1, 'Buffer', 2, fcb]);
   });
 
   test('Should replace nested args of type Buffer', () => {
@@ -99,9 +100,9 @@ describe('simplifyArgs', () => {
     };
 
     const fcb = new FakeClassB(1, 'b');
-    const args = [1, nested, 2, fcb];
-    const newArgs = Logger.simplifyArgs(args, ['FakeClassA']);
+    const arguments_ = [1, nested, 2, fcb];
+    const newArguments = Logger.simplifyArgs(arguments_, ['FakeClassA']);
 
-    expect(newArgs).toStrictEqual([1, nestedReplaced, 2, fcb]);
+    expect(newArguments).toStrictEqual([1, nestedReplaced, 2, fcb]);
   });
 });
