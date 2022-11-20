@@ -4,11 +4,11 @@ import deepmerge from 'deepmerge';
 import * as _ from 'lodash';
 
 export type ILogData = {
-  [key: string]: any;
-  queNumber?: any;
+  [key: string]: unknown;
+  queNumber?: number;
   type?: 'error' | 'info';
   message?: string;
-  data?: any;
+  data?: { args?: any[]; query?: string; model?: { name: string }; type?: string; instance?: { dataValues: unknown } };
   err?: any;
 };
 
@@ -33,6 +33,8 @@ export const defaultConfig: ILoggerConfig & ILoggerRequiredConfig = {
   excludeClasses: ['Transaction', 'Logger'],
   consoleDepth: 3,
 };
+
+const defaultLogData: ILogData = { type: 'info', message: '', data: undefined, queNumber: 0 };
 
 export const LOGGER = Symbol('LOGGER');
 
@@ -59,15 +61,11 @@ export default class Logger {
   /**
    * Every logger context should be closed at the end, otherwise spans are not saved.
    */
-  finish() {
+  public finish(): void {
     if (this.context) this.context.finish();
   }
 
-  write(
-    action: string,
-    logData: ILogData = { type: 'info', message: '', data: null, queNumber: 0 },
-    context = this.context,
-  ): Logger {
+  public write(action: string, logData: ILogData = defaultLogData, context = this.context): Logger {
     const { type, message, data, err, queNumber } = logData;
     const details = `(${this.serviceName}):${queNumber || ''}: ${action || ''}`;
     this.consoleWrite(type ?? 'error', message ?? '', details, data, err);
@@ -81,16 +79,23 @@ export default class Logger {
   /**
    * Format & Log output to the console If the config says so
    */
-  private consoleWrite(type: 'error' | 'info', message: string, details: string, data: any, err: any): void {
+  private consoleWrite(
+    type: 'error' | 'info',
+    message: string,
+    details: string,
+    data: ILogData['data'],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error: any,
+  ): void {
     if (!this.config.writeToConsole) return;
 
-    let color = '\x1b[33m%s\x1b[0m : \x1b[36m%s\x1b[0m';
+    let color = '\u001B[33m%s\u001B[0m : \u001B[36m%s\u001B[0m';
     if (type === 'info') {
       console.log(color, details, message || '');
     } else {
-      color = '\x1b[31m%s\x1b[0m';
+      color = '\u001B[31m%s\u001B[0m';
       details = '';
-      console.error(color, details, message || '', err);
+      console.error(color, details, message || '', error);
     }
     if (data) {
       data.args = Logger.simplifyArgs(data.args, this.config.excludeClasses);
@@ -98,13 +103,13 @@ export default class Logger {
     }
   }
 
-  info(action: string, logData: ILogData = { message: '', data: null, queNumber: 0 }, context?: LogContext): Logger {
+  public info(action: string, logData: ILogData = defaultLogData, context?: LogContext): Logger {
     return this.write(action, { ...logData, type: 'info' }, context);
   }
 
-  error(
+  public error(
     actionOrError: string | Error | unknown,
-    logData: ILogData = { message: '', data: null, queNumber: 0 },
+    logData: ILogData = defaultLogData,
     context?: LogContext,
   ): Logger {
     let action = 'error';
@@ -119,16 +124,16 @@ export default class Logger {
   /**
    * logging db queries (only sequelize)
    */
-  db = (query: string = '', data: any = {}) => {
-    const dbInstance = data.model?.name ?? '';
+  public db = (query = '', data: ILogData['data'] = {}): void => {
+    const databaseInstance = data.model?.name ?? '';
     const queryType = data.type ?? '';
-    const subLog = this.getSubLogger(`sequelize${dbInstance ? ': ' + dbInstance : ''}`, this.context);
-    if (subLog.context != null) {
+    const subLog = this.getSubLogger(`sequelize${databaseInstance ? ': ' + databaseInstance : ''}`, this.context);
+    if (subLog.context != undefined) {
       subLog.context.addTags({
-        [opentracing.Tags.DB_INSTANCE]: dbInstance,
+        [opentracing.Tags.DB_INSTANCE]: databaseInstance,
         [opentracing.Tags.DB_STATEMENT]: query,
       });
-      subLog.info(`${queryType} ${dbInstance}`, { data: { query, args: [data.instance?.dataValues] } });
+      subLog.info(`${queryType} ${databaseInstance}`, { data: { query, args: [data.instance?.dataValues] } });
       subLog.finish();
     }
   };
@@ -136,45 +141,60 @@ export default class Logger {
   /**
    * Static error logger to use without 'new'
    * logs an error and throws it
+   *
    * @deprecated **uses default config where connection to jaeger not set, so tracer will not work**
    */
-  public static logError(e: Error, ctx: any | ILogData, serviceName = 'Unknown service'): void {
+  public static logError(error: Error, context: ILogData, serviceName = 'Unknown service'): void {
     const logger = new Logger(serviceName);
-    logger.error(e.message, ctx);
-    throw e;
+    logger.error(error.message, context);
+    throw error;
   }
 
   /**
    * Wrap function call input/output
    * Creates sub span in logger context and records function request/response
+   *
    * @param contextName - name of the span
    * @param func - function to be called
    * @param args - arguments for provided function
    */
-  public wrapCall = <T = any>(contextName: string, func: any, ...args: any): T => {
+  public wrapCall = <T = unknown>(
+    contextName: string,
+    function_: Function,
+    ...arguments_: any
+  ): T | Promise<T> | Promise<ILogData['data']> => {
     const subLogger = this.getSubLogger(contextName, this.context);
-    try {
-      subLogger.info('request', { action: contextName, data: { args } });
-      const response = func.apply(func, args);
 
-      Promise.resolve(response)
-        .then((data) => {
-          subLogger.info('response', { action: contextName, data: { return: data || response } });
+    try {
+      subLogger.info('request', { action: contextName, data: { args: arguments_ } });
+      const response = function_.apply(function_, arguments_);
+
+      const promise = Promise.resolve(response)
+        .then((data: ILogData['data']) => {
+          subLogger.info('response', { action: contextName, data: data || response });
+
+          return data;
         })
-        .catch((e) => {
+        .catch((error) => {
           // for async functions
-          subLogger.error('error', { action: contextName, err: e });
-          throw e;
+          subLogger.error('error', { action: contextName, err: error });
+
+          throw error;
         })
         .finally(() => {
           subLogger.finish();
         });
 
+      if (response instanceof Promise === true) {
+        return promise;
+      }
+
       return response;
-    } catch (e) {
+    } catch (error) {
       // in case decorated function not async
-      subLogger.error('error', { action: contextName, err: e });
-      throw e;
+      subLogger.error('error', { action: contextName, err: error });
+
+      throw error;
     }
   };
 
@@ -189,20 +209,22 @@ export default class Logger {
 
   /**
    * It takes an array of arguments and returns a new array of arguments with all the heavy objects removed
+   *
    * @param {any[]} args - any[] - the arguments to be simplified
    * @param {string[]} excludeClasses - An array of class names that you want to exclude from the logging.
    * @returns An array of objects
    */
-  public static simplifyArgs(args: any[], excludeClasses: string[] = []): any[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public static simplifyArgs(arguments_: any, excludeClasses: string[] = []): unknown[] {
     // TODO: filter out objects by size
-    return (args || []).map((arg) => {
-      if (arg instanceof Object || arg instanceof Buffer) {
-        arg = _.cloneDeep(arg);
-        arg = Logger.replaceBufferRecursive(arg);
-        arg = Logger.replaceClassesRecursive(arg, excludeClasses);
+    return (arguments_ || []).map((argument: unknown) => {
+      if (argument instanceof Object || argument instanceof Buffer) {
+        argument = _.cloneDeep(argument);
+        argument = Logger.replaceBufferRecursive(argument);
+        argument = Logger.replaceClassesRecursive(argument, excludeClasses);
       }
 
-      return arg;
+      return argument;
     });
   }
 
@@ -210,36 +232,39 @@ export default class Logger {
    * finds arg nested property by provided class name and replaces it with class name (string).
    * modifies original value.
    */
-  public static replaceClassesRecursive(arg: any, classNames: string[], depth = 3) {
-    if (depth <= 0) return arg;
-    if (_.isObject(arg) && classNames.includes(arg.constructor?.name)) {
-      return arg.constructor?.name;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public static replaceClassesRecursive(argument: any, classNames: string[], depth = 3): any {
+    if (depth <= 0) return argument;
+
+    if (_.isObject(argument) && classNames.includes(argument.constructor?.name)) {
+      return argument.constructor?.name;
     }
-    _.forIn(arg, (value, key) => {
+
+    _.forIn(argument, (value, key) => {
       if (_.isObject(value)) {
-        if (classNames.includes(value.constructor?.name)) arg[key] = value.constructor?.name;
+        if (classNames.includes(value.constructor?.name)) argument[key] = value.constructor?.name;
         else return Logger.replaceClassesRecursive(value, classNames, depth - 1);
       }
     });
-    return arg;
+
+    return argument;
   }
 
   /**
    * finds Buffers in args recursively and replaces them with string 'Buffer'.
    * modifies original value.
    */
-  public static replaceBufferRecursive(arg: any, depth = 3) {
-    if (Buffer.isBuffer(arg)) return 'Buffer';
+  public static replaceBufferRecursive(argument: unknown, depth = 3): unknown {
+    if (Buffer.isBuffer(argument)) return 'Buffer';
 
-    if (depth > 0) {
-      if (_.isObject(arg)) {
-        _.forIn(arg, (value, key) => {
-          // @ts-ignore
-          arg[key] = Logger.replaceBufferRecursive(value, depth - 1);
-        });
-      }
+    if (depth > 0 && _.isObject(argument)) {
+      _.forIn(argument, (value, key) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        argument[key] = Logger.replaceBufferRecursive(value, depth - 1);
+      });
     }
 
-    return arg;
+    return argument;
   }
 }

@@ -6,6 +6,7 @@
   "testTimeout": 60000,
   "clearMocks": true,
   "forceExit": true,
+  "detectOpenHandles": true,
   "moduleFileExtensions": [
     "ts",
     "js",
