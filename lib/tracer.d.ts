@@ -26,6 +26,6 @@ export default class Tracer {
     getSubContext(contextName: string, parentContext?: LogContext): LogContext | undefined;
     write(action: string, logData: ILogData, context: LogContext): void;
     send(context: LogContext, keyValuePairs: {
-        [key: string]: any;
+        [key: string]: unknown;
     }, timestamp?: number): LogContext;
 }

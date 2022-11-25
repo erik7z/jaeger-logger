@@ -20,6 +20,7 @@ module.exports = {
   overrides: [],
   rules: {
     'unicorn/prefer-module': 'off',
+    'unicorn/filename-case': 'off',
     '@typescript-eslint/array-type': [
       'warn',
       {
@@ -50,7 +51,7 @@ module.exports = {
         },
       },
     ],
-    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/ban-types': [
       'error',
       {

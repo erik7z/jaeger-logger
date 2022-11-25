@@ -1,11 +1,21 @@
 import Tracer, { ITracerConfig, LogContext } from './tracer';
 import { opentracing } from 'jaeger-client';
 export declare type ILogData = {
-    [key: string]: any;
-    queNumber?: any;
+    [key: string]: unknown;
+    queNumber?: number;
     type?: 'error' | 'info';
     message?: string;
-    data?: any;
+    data?: {
+        args?: any[];
+        query?: string;
+        model?: {
+            name: string;
+        };
+        type?: string;
+        instance?: {
+            dataValues: unknown;
+        };
+    };
     err?: any;
 };
 export interface ILoggerConfig {
@@ -45,14 +55,14 @@ export default class Logger {
     /**
      * logging db queries (only sequelize)
      */
-    db: (query?: string, data?: any) => void;
+    db: (query?: string, data?: ILogData['data']) => void;
     /**
      * Static error logger to use without 'new'
      * logs an error and throws it
      *
      * @deprecated **uses default config where connection to jaeger not set, so tracer will not work**
      */
-    static logError(e: Error, ctx: any | ILogData, serviceName?: string): void;
+    static logError(error: Error, context: ILogData, serviceName?: string): void;
     /**
      * Wrap function call input/output
      * Creates sub span in logger context and records function request/response
@@ -61,7 +71,17 @@ export default class Logger {
      * @param func - function to be called
      * @param args - arguments for provided function
      */
-    wrapCall: <T = any>(contextName: string, func: any, ...args: any) => T | Promise<T>;
+    wrapCall: <T = unknown>(contextName: string, function_: Function, ...arguments_: any) => T | Promise<T> | Promise<{
+        args?: any[] | undefined;
+        query?: string | undefined;
+        model?: {
+            name: string;
+        } | undefined;
+        type?: string | undefined;
+        instance?: {
+            dataValues: unknown;
+        } | undefined;
+    } | undefined>;
     /**
      * Useful for getting nested logs.
      * Returns a new Logger instance with the given name and parentContext.
@@ -75,16 +95,16 @@ export default class Logger {
      * @param {string[]} excludeClasses - An array of class names that you want to exclude from the logging.
      * @returns An array of objects
      */
-    static simplifyArgs(args: any[], excludeClasses?: string[]): any[];
+    static simplifyArgs(arguments_: any, excludeClasses?: string[]): unknown[];
     /**
      * finds arg nested property by provided class name and replaces it with class name (string).
      * modifies original value.
      */
-    static replaceClassesRecursive(arg: any, classNames: string[], depth?: number): any;
+    static replaceClassesRecursive(argument: any, classNames: string[], depth?: number): any;
     /**
      * finds Buffers in args recursively and replaces them with string 'Buffer'.
      * modifies original value.
      */
-    static replaceBufferRecursive(arg: any, depth?: number): any;
+    static replaceBufferRecursive(argument: unknown, depth?: number): unknown;
 }
 export {};
