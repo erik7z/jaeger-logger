@@ -99,6 +99,8 @@ export default class Tracer {
                 ...(err.shortMessage ? { shortMessage: err.shortMessage } : {}),
                 ...(err.detailedMessage ? { detailedMessage: err.detailedMessage } : {}),
                 ...(err.stack ? { stack: err.stack } : {}),
+                ...(err.body ? { stack: err.body } : {}),
+                ...(err.response?.body ? { response: { body: err.response.body } } : {}),
               },
             }
           : {}),
