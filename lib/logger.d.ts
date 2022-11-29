@@ -1,7 +1,6 @@
 import Tracer, { ITracerConfig, LogContext } from './tracer';
 import { opentracing } from 'jaeger-client';
 export declare type ILogData = {
-    [key: string]: unknown;
     queNumber?: number;
     type?: 'error' | 'info';
     message?: string;
@@ -10,13 +9,16 @@ export declare type ILogData = {
         query?: string;
         model?: {
             name: string;
+            [key: string]: unknown;
         };
         type?: string;
         instance?: {
             dataValues: unknown;
+            [key: string]: unknown;
         };
     };
     err?: any;
+    [key: string]: unknown;
 };
 export interface ILoggerConfig {
     writeToConsole?: boolean;
@@ -68,17 +70,19 @@ export default class Logger {
      * Creates sub span in logger context and records function request/response
      *
      * @param contextName - name of the span
-     * @param func - function to be called
-     * @param args - arguments for provided function
+     * @param function_ - function to be called
+     * @param arguments_ - arguments for provided function
      */
-    wrapCall: <T = unknown>(contextName: string, function_: Function, ...arguments_: any) => T | Promise<T> | Promise<{
+    wrapCall: <T = unknown>(contextName: string, function_: Function, ...arguments_: unknown[]) => T | Promise<T> | Promise<{
         args?: any[] | undefined;
         query?: string | undefined;
         model?: {
+            [key: string]: unknown;
             name: string;
         } | undefined;
         type?: string | undefined;
         instance?: {
+            [key: string]: unknown;
             dataValues: unknown;
         } | undefined;
     } | undefined>;
@@ -91,7 +95,7 @@ export default class Logger {
     /**
      * It takes an array of arguments and returns a new array of arguments with all the heavy objects removed
      *
-     * @param {any[]} args - any[] - the arguments to be simplified
+     * @param {any[]} arguments_ - any[] - the arguments to be simplified
      * @param {string[]} excludeClasses - An array of class names that you want to exclude from the logging.
      * @returns An array of objects
      */

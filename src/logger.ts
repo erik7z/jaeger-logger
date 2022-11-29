@@ -4,12 +4,24 @@ import deepmerge from 'deepmerge';
 import * as _ from 'lodash';
 
 export type ILogData = {
-  [key: string]: unknown;
   queNumber?: number;
   type?: 'error' | 'info';
   message?: string;
-  data?: { args?: any[]; query?: string; model?: { name: string }; type?: string; instance?: { dataValues: unknown } };
+  data?: {
+    args?: any[];
+    query?: string;
+    model?: {
+      name: string;
+      [key: string]: unknown;
+    };
+    type?: string;
+    instance?: {
+      dataValues: unknown;
+      [key: string]: unknown;
+    };
+  };
   err?: any;
+  [key: string]: unknown;
 };
 
 export interface ILoggerConfig {
@@ -155,13 +167,13 @@ export default class Logger {
    * Creates sub span in logger context and records function request/response
    *
    * @param contextName - name of the span
-   * @param func - function to be called
-   * @param args - arguments for provided function
+   * @param function_ - function to be called
+   * @param arguments_ - arguments for provided function
    */
   public wrapCall = <T = unknown>(
     contextName: string,
     function_: Function,
-    ...arguments_: any
+    ...arguments_: unknown[]
   ): T | Promise<T> | Promise<ILogData['data']> => {
     const subLogger = this.getSubLogger(contextName, this.context);
 
@@ -185,7 +197,7 @@ export default class Logger {
           subLogger.finish();
         });
 
-      if (response instanceof Promise === true) {
+      if (response instanceof Promise) {
         return promise;
       }
 
@@ -210,7 +222,7 @@ export default class Logger {
   /**
    * It takes an array of arguments and returns a new array of arguments with all the heavy objects removed
    *
-   * @param {any[]} args - any[] - the arguments to be simplified
+   * @param {any[]} arguments_ - any[] - the arguments to be simplified
    * @param {string[]} excludeClasses - An array of class names that you want to exclude from the logging.
    * @returns An array of objects
    */
