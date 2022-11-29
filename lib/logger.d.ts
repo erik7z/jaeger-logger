@@ -1,22 +1,23 @@
 import Tracer, { ITracerConfig, LogContext } from './tracer';
 import { opentracing } from 'jaeger-client';
+declare type IData = {
+    args?: any[];
+    query?: string;
+    model?: {
+        name: string;
+        [key: string]: unknown;
+    };
+    type?: string;
+    instance?: {
+        dataValues: unknown;
+        [key: string]: unknown;
+    };
+};
 export declare type ILogData = {
     queNumber?: number;
     type?: 'error' | 'info';
     message?: string;
-    data?: {
-        args?: any[];
-        query?: string;
-        model?: {
-            name: string;
-            [key: string]: unknown;
-        };
-        type?: string;
-        instance?: {
-            dataValues: unknown;
-            [key: string]: unknown;
-        };
-    };
+    data?: any | IData;
     err?: any;
     [key: string]: unknown;
 };
@@ -73,19 +74,7 @@ export default class Logger {
      * @param function_ - function to be called
      * @param arguments_ - arguments for provided function
      */
-    wrapCall: <T = unknown>(contextName: string, function_: Function, ...arguments_: unknown[]) => T | Promise<T> | Promise<{
-        args?: any[] | undefined;
-        query?: string | undefined;
-        model?: {
-            [key: string]: unknown;
-            name: string;
-        } | undefined;
-        type?: string | undefined;
-        instance?: {
-            [key: string]: unknown;
-            dataValues: unknown;
-        } | undefined;
-    } | undefined>;
+    wrapCall: <T = any>(contextName: string, function_: Function, ...arguments_: unknown[]) => T | Promise<T>;
     /**
      * Useful for getting nested logs.
      * Returns a new Logger instance with the given name and parentContext.

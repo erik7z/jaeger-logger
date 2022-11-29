@@ -3,23 +3,25 @@ import { opentracing } from 'jaeger-client';
 import deepmerge from 'deepmerge';
 import * as _ from 'lodash';
 
+type IData = {
+  args?: any[];
+  query?: string;
+  model?: {
+    name: string;
+    [key: string]: unknown;
+  };
+  type?: string;
+  instance?: {
+    dataValues: unknown;
+    [key: string]: unknown;
+  };
+};
+
 export type ILogData = {
   queNumber?: number;
   type?: 'error' | 'info';
   message?: string;
-  data?: {
-    args?: any[];
-    query?: string;
-    model?: {
-      name: string;
-      [key: string]: unknown;
-    };
-    type?: string;
-    instance?: {
-      dataValues: unknown;
-      [key: string]: unknown;
-    };
-  };
+  data?: any | IData;
   err?: any;
   [key: string]: unknown;
 };
@@ -170,11 +172,11 @@ export default class Logger {
    * @param function_ - function to be called
    * @param arguments_ - arguments for provided function
    */
-  public wrapCall = <T = unknown>(
+  public wrapCall = <T = ILogData['data']>(
     contextName: string,
     function_: Function,
     ...arguments_: unknown[]
-  ): T | Promise<T> | Promise<ILogData['data']> => {
+  ): T | Promise<T> => {
     const subLogger = this.getSubLogger(contextName, this.context);
 
     try {
