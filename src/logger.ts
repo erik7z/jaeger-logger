@@ -2,7 +2,7 @@ import Tracer, { ITracerConfig, LogSpan, getDefaultTracer } from './tracer';
 import { opentracing } from 'jaeger-client';
 import deepmerge from 'deepmerge';
 import * as _ from 'lodash';
-import { isArray } from "lodash";
+import { isArray } from 'lodash';
 
 type IData = {
   args?: any[];
@@ -258,27 +258,26 @@ export default class Logger {
   public static simplifyArgs(arguments_: any, excludeClasses: string[] = []): unknown[] {
     // TODO: filter out objects by size
 
-    function applyFilters(args: any) {
-      args = _.cloneDeep(args);
-      args = Logger.replaceBufferRecursive(args);
-      args = Logger.replaceClassesRecursive(args, excludeClasses);
-      return args
+    function applyFilters(arguments__: any) {
+      arguments__ = _.cloneDeep(arguments__);
+      arguments__ = Logger.replaceBufferRecursive(arguments__);
+      arguments__ = Logger.replaceClassesRecursive(arguments__, excludeClasses);
+      return arguments__;
     }
 
-    if(isArray(arguments_)){
+    if (isArray(arguments_)) {
       return (arguments_ || []).map((argument: unknown) => {
         if (argument instanceof Object || argument instanceof Buffer) {
-          argument = applyFilters(argument)
+          argument = applyFilters(argument);
         }
         return argument;
       });
-    } else if(arguments_ instanceof Object || arguments_ instanceof Buffer) {
-      arguments_ = applyFilters(arguments_)
+    } else if (arguments_ instanceof Object || arguments_ instanceof Buffer) {
+      arguments_ = applyFilters(arguments_);
     }
 
-    return arguments_
+    return arguments_;
   }
-
 
   /**
    * finds arg nested property by provided class name and replaces it with class name (string).

@@ -66,12 +66,12 @@ describe('simplifyArgs', () => {
   });
 
   test('Should replace values if object datatype provided as argument', () => {
-    const newArguments = Logger.simplifyArgs({a: "a", b: "b"}, ['FakeClassA']);
-    expect(newArguments).toStrictEqual({a: "a", b: "b"});
+    const newArguments = Logger.simplifyArgs({ a: 'a', b: 'b' }, ['FakeClassA']);
+    expect(newArguments).toStrictEqual({ a: 'a', b: 'b' });
 
     const buff = Buffer.from('abc');
-    const newArguments1 = Logger.simplifyArgs({a: "a", b: buff});
-    expect(newArguments1).toStrictEqual({a: "a", b: "Buffer"});
+    const newArguments1 = Logger.simplifyArgs({ a: 'a', b: buff });
+    expect(newArguments1).toStrictEqual({ a: 'a', b: 'Buffer' });
   });
 
   test('Should replace args of type Buffer', () => {

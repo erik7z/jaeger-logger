@@ -77,9 +77,10 @@ export default class Tracer {
   // TODO: add tests for proper message output
   public write(action: string, logData: ILogData, context: LogSpan): void {
     if (!this.config.useTracer) return;
-    const { type, message, data, err } = logData;
+    const { type, message, err } = logData;
+    let { data } = logData;
     if (type === 'error') context.setTag(opentracing.Tags.ERROR, true);
-    if (data?.args) data.args = Logger.simplifyArgs(data.args, this.config.excludeClasses);
+    if (data) data = Logger.simplifyArgs(data, this.config.excludeClasses);
 
     this.send(context, {
       action,
