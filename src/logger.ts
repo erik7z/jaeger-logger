@@ -2,6 +2,7 @@ import Tracer, { ITracerConfig, LogSpan, getDefaultTracer } from './tracer';
 import { opentracing } from 'jaeger-client';
 import deepmerge from 'deepmerge';
 import * as _ from 'lodash';
+import { isArray } from "lodash";
 
 type IData = {
   args?: any[];
@@ -256,16 +257,28 @@ export default class Logger {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static simplifyArgs(arguments_: any, excludeClasses: string[] = []): unknown[] {
     // TODO: filter out objects by size
-    return (arguments_ || []).map((argument: unknown) => {
-      if (argument instanceof Object || argument instanceof Buffer) {
-        argument = _.cloneDeep(argument);
-        argument = Logger.replaceBufferRecursive(argument);
-        argument = Logger.replaceClassesRecursive(argument, excludeClasses);
-      }
 
-      return argument;
-    });
+    function applyFilters(args: any) {
+      args = _.cloneDeep(args);
+      args = Logger.replaceBufferRecursive(args);
+      args = Logger.replaceClassesRecursive(args, excludeClasses);
+      return args
+    }
+
+    if(isArray(arguments_)){
+      return (arguments_ || []).map((argument: unknown) => {
+        if (argument instanceof Object || argument instanceof Buffer) {
+          argument = applyFilters(argument)
+        }
+        return argument;
+      });
+    } else if(arguments_ instanceof Object || arguments_ instanceof Buffer) {
+      arguments_ = applyFilters(arguments_)
+    }
+
+    return arguments_
   }
+
 
   /**
    * finds arg nested property by provided class name and replaces it with class name (string).
