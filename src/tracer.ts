@@ -13,7 +13,7 @@ export interface ITracerConfig {
 }
 
 /* A wrapper for `opentracing.Span` */
-export type LogContext = opentracing.Span;
+export type LogSpan = opentracing.Span;
 
 export const defaultConfig: ITracerConfig = {
   useTracer: false,
@@ -65,9 +65,9 @@ export default class Tracer {
    * Creates a new child span with the given name and parent context,
    * and adds a tag to the span with the service name
    */
-  public getSubContext(contextName: string, parentContext?: LogContext): LogContext | undefined {
+  public getSubContext(contextName: string, parentContext?: LogSpan): LogSpan | undefined {
     if (!contextName) return;
-    const subContext: LogContext = this.client.startSpan(contextName, {
+    const subContext: LogSpan = this.client.startSpan(contextName, {
       ...(parentContext ? { childOf: parentContext } : {}),
     });
     subContext.addTags({ [opentracing.Tags.SPAN_KIND]: this.serviceName });
@@ -75,7 +75,7 @@ export default class Tracer {
   }
 
   // TODO: add tests for proper message output
-  public write(action: string, logData: ILogData, context: LogContext): void {
+  public write(action: string, logData: ILogData, context: LogSpan): void {
     if (!this.config.useTracer) return;
     const { type, message, data, err } = logData;
     if (type === 'error') context.setTag(opentracing.Tags.ERROR, true);
@@ -108,7 +108,7 @@ export default class Tracer {
     });
   }
 
-  public send(context: LogContext, keyValuePairs: { [key: string]: unknown }, timestamp?: number): LogContext {
+  public send(context: LogSpan, keyValuePairs: { [key: string]: unknown }, timestamp?: number): LogSpan {
     context.log(keyValuePairs, timestamp);
     return context;
   }

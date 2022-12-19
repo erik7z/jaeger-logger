@@ -8,7 +8,7 @@ export interface ITracerConfig {
     };
     excludeClasses?: string[];
 }
-export declare type LogContext = opentracing.Span;
+export declare type LogSpan = opentracing.Span;
 export declare const defaultConfig: ITracerConfig;
 /**
  * Singleton for returning instance of the Tracer class.
@@ -23,9 +23,9 @@ export default class Tracer {
      * Creates a new child span with the given name and parent context,
      * and adds a tag to the span with the service name
      */
-    getSubContext(contextName: string, parentContext?: LogContext): LogContext | undefined;
-    write(action: string, logData: ILogData, context: LogContext): void;
-    send(context: LogContext, keyValuePairs: {
+    getSubContext(contextName: string, parentContext?: LogSpan): LogSpan | undefined;
+    write(action: string, logData: ILogData, context: LogSpan): void;
+    send(context: LogSpan, keyValuePairs: {
         [key: string]: unknown;
-    }, timestamp?: number): LogContext;
+    }, timestamp?: number): LogSpan;
 }

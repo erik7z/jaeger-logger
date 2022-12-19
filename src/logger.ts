@@ -1,4 +1,4 @@
-import Tracer, { ITracerConfig, LogContext, getDefaultTracer } from './tracer';
+import Tracer, { ITracerConfig, LogSpan, getDefaultTracer } from './tracer';
 import { opentracing } from 'jaeger-client';
 import deepmerge from 'deepmerge';
 import * as _ from 'lodash';
@@ -36,11 +36,17 @@ export interface ILoggerConfig {
 
 export interface ILoggerOptions {
   config?: ILoggerConfig;
-  parentContext?: LogContext;
+  parentContext?: LogSpan;
   createNewContext?: boolean;
 }
 
 type ILoggerRequiredConfig = Required<Pick<ILoggerConfig, 'excludeClasses' | 'consoleDepth'>>;
+
+export interface IUberTrace {
+  'uber-trace-id': string;
+
+  [k: string]: string | undefined;
+}
 
 export const defaultConfig: ILoggerConfig & ILoggerRequiredConfig = {
   excludeMethods: ['assertInitialized'],
@@ -55,7 +61,7 @@ export const LOGGER = Symbol('LOGGER');
 export default class Logger {
   public readonly type = LOGGER;
   public readonly tracer: Tracer;
-  public readonly context: LogContext | undefined;
+  public readonly context: LogSpan | undefined;
   public readonly config: ILoggerConfig & ILoggerRequiredConfig;
   public isToCloseContext = true;
 
@@ -112,20 +118,16 @@ export default class Logger {
       console.error(color, details, message || '', error);
     }
     if (data) {
-      data.args = Logger.simplifyArgs(data.args, this.config.excludeClasses);
+      data = Logger.simplifyArgs(data, this.config.excludeClasses);
       console.dir(data, { colors: true, depth: this.config.consoleDepth });
     }
   }
 
-  public info(action: string, logData: ILogData = defaultLogData, context?: LogContext): Logger {
+  public info(action: string, logData: ILogData = defaultLogData, context?: LogSpan): Logger {
     return this.write(action, { ...logData, type: 'info' }, context);
   }
 
-  public error(
-    actionOrError: string | Error | unknown,
-    logData: ILogData = defaultLogData,
-    context?: LogContext,
-  ): Logger {
+  public error(actionOrError: string | Error | unknown, logData: ILogData = defaultLogData, context?: LogSpan): Logger {
     let action = 'error';
     if (typeof actionOrError === 'string') action = actionOrError;
     else {
@@ -219,6 +221,29 @@ export default class Logger {
    */
   public getSubLogger(name: string, parentContext = this.context): Logger {
     return new Logger(name, { parentContext, config: this.config });
+  }
+
+  /**
+   * Export context data
+   * Useful for transferring context to other microservice and create connected logs
+   */
+  public extract(): IUberTrace {
+    const uberTrace = {};
+    if (this.context) {
+      this.tracer.client.inject(this.context, opentracing.FORMAT_TEXT_MAP, uberTrace);
+    }
+    return uberTrace as IUberTrace;
+  }
+
+  /**
+   * Import context data
+   * Useful for continuing logs of other microservice and create connected logs
+   * @param contextName
+   * @param trace
+   */
+  public inject(contextName: string, trace: IUberTrace): Logger {
+    const span_context = this.tracer.client.extract(opentracing.FORMAT_TEXT_MAP, trace);
+    return this.getSubLogger(contextName, span_context as unknown as opentracing.Span);
   }
 
   /**

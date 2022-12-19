@@ -1,4 +1,4 @@
-import Tracer, { ITracerConfig, LogContext } from './tracer';
+import Tracer, { ITracerConfig, LogSpan } from './tracer';
 import { opentracing } from 'jaeger-client';
 declare type IData = {
     args?: any[];
@@ -30,17 +30,21 @@ export interface ILoggerConfig {
 }
 export interface ILoggerOptions {
     config?: ILoggerConfig;
-    parentContext?: LogContext;
+    parentContext?: LogSpan;
     createNewContext?: boolean;
 }
 declare type ILoggerRequiredConfig = Required<Pick<ILoggerConfig, 'excludeClasses' | 'consoleDepth'>>;
+export interface IUberTrace {
+    'uber-trace-id': string;
+    [k: string]: string | undefined;
+}
 export declare const defaultConfig: ILoggerConfig & ILoggerRequiredConfig;
 export declare const LOGGER: unique symbol;
 export default class Logger {
     readonly serviceName: string;
     readonly type: symbol;
     readonly tracer: Tracer;
-    readonly context: LogContext | undefined;
+    readonly context: LogSpan | undefined;
     readonly config: ILoggerConfig & ILoggerRequiredConfig;
     isToCloseContext: boolean;
     constructor(serviceName: string, options?: ILoggerOptions);
@@ -53,8 +57,8 @@ export default class Logger {
      * Format & Log output to the console If the config says so
      */
     private consoleWrite;
-    info(action: string, logData?: ILogData, context?: LogContext): Logger;
-    error(actionOrError: string | Error | unknown, logData?: ILogData, context?: LogContext): Logger;
+    info(action: string, logData?: ILogData, context?: LogSpan): Logger;
+    error(actionOrError: string | Error | unknown, logData?: ILogData, context?: LogSpan): Logger;
     /**
      * logging db queries (only sequelize)
      */
@@ -81,6 +85,18 @@ export default class Logger {
      * *don't forget to close this sub logger on completion!*
      */
     getSubLogger(name: string, parentContext?: opentracing.Span | undefined): Logger;
+    /**
+     * Export context data
+     * Useful for transferring context to other microservice and create connected logs
+     */
+    extract(): IUberTrace;
+    /**
+     * Import context data
+     * Useful for continuing logs of other microservice and create connected logs
+     * @param contextName
+     * @param trace
+     */
+    inject(contextName: string, trace: IUberTrace): Logger;
     /**
      * It takes an array of arguments and returns a new array of arguments with all the heavy objects removed
      *
