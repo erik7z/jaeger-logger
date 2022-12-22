@@ -100,7 +100,7 @@ export default class Logger {
     /**
      * It takes an array of arguments and returns a new array of arguments with all the heavy objects removed
      *
-     * @param {any[]} arguments_ - any[] - the arguments to be simplified
+     * @param {an y[]} arguments_ - any[] - the arguments to be simplified
      * @param {string[]} excludeClasses - An array of class names that you want to exclude from the logging.
      * @returns An array of objects
      */
@@ -115,5 +115,10 @@ export default class Logger {
      * modifies original value.
      */
     static replaceBufferRecursive(argument: unknown, depth?: number): unknown;
+    /**
+     * finds Streams in args recursively and replaces them with string 'Stream'.
+     * modifies original value.
+     */
+    static replaceStreamRecursive(argument: unknown, depth?: number): unknown;
 }
 export {};

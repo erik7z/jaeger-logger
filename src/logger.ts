@@ -3,6 +3,7 @@ import { opentracing } from 'jaeger-client';
 import deepmerge from 'deepmerge';
 import * as _ from 'lodash';
 import { isArray } from 'lodash';
+import { Stream } from 'node:stream';
 
 type IData = {
   args?: any[];
@@ -250,7 +251,7 @@ export default class Logger {
   /**
    * It takes an array of arguments and returns a new array of arguments with all the heavy objects removed
    *
-   * @param {any[]} arguments_ - any[] - the arguments to be simplified
+   * @param {an y[]} arguments_ - any[] - the arguments to be simplified
    * @param {string[]} excludeClasses - An array of class names that you want to exclude from the logging.
    * @returns An array of objects
    */
@@ -260,6 +261,7 @@ export default class Logger {
 
     function applyFilters(arguments__: any) {
       arguments__ = _.cloneDeep(arguments__);
+      arguments__ = Logger.replaceStreamRecursive(arguments__);
       arguments__ = Logger.replaceBufferRecursive(arguments__);
       arguments__ = Logger.replaceClassesRecursive(arguments__, excludeClasses);
       return arguments__;
@@ -272,7 +274,7 @@ export default class Logger {
         }
         return argument;
       });
-    } else if (arguments_ instanceof Object || arguments_ instanceof Buffer) {
+    } else if (arguments_ instanceof Object || arguments_ instanceof Buffer || arguments_ instanceof Stream) {
       arguments_ = applyFilters(arguments_);
     }
 
@@ -313,6 +315,24 @@ export default class Logger {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         argument[key] = Logger.replaceBufferRecursive(value, depth - 1);
+      });
+    }
+
+    return argument;
+  }
+
+  /**
+   * finds Streams in args recursively and replaces them with string 'Stream'.
+   * modifies original value.
+   */
+  public static replaceStreamRecursive(argument: unknown, depth = 3): unknown {
+    if (argument instanceof Stream) return 'Stream';
+
+    if (depth > 0 && _.isObject(argument)) {
+      _.forIn(argument, (value, key) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        argument[key] = Logger.replaceStreamRecursive(value, depth - 1);
       });
     }
 
