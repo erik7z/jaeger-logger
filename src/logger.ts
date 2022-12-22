@@ -3,7 +3,8 @@ import { opentracing } from 'jaeger-client';
 import deepmerge from 'deepmerge';
 import * as _ from 'lodash';
 import { isArray } from 'lodash';
-import { Stream } from 'node:stream';
+// eslint-disable-next-line unicorn/prefer-node-protocol
+import { Stream } from 'stream';
 
 type IData = {
   args?: any[];
