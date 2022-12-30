@@ -1,4 +1,4 @@
-import Tracer, { ITracerConfig, LogSpan } from './tracer';
+import { ITracerConfig, LogSpan } from './tracer';
 import { opentracing } from 'jaeger-client';
 declare type IData = {
     args?: any[];
@@ -43,8 +43,8 @@ export declare const LOGGER: unique symbol;
 export default class Logger {
     readonly serviceName: string;
     readonly type: symbol;
-    readonly tracer: Tracer | undefined;
-    readonly context: LogSpan | undefined;
+    private readonly tracer;
+    private readonly context;
     readonly config: ILoggerConfig & ILoggerRequiredConfig;
     isToCloseContext: boolean;
     constructor(serviceName: string, options?: ILoggerOptions);
@@ -53,12 +53,37 @@ export default class Logger {
      */
     finish(): void;
     closeTracer(): void;
-    write(action: string, logData?: ILogData, context?: opentracing.Span | undefined): Logger;
     /**
-     * Format & Log output to the console If the config says so
+     * Proxying 'Tracer.Span.AddTags' method
+     * It adds tags to the span.
+     * @param keyValueMap - { [key: string]: any }
+     * @returns The current instance of the class.
      */
-    private consoleWrite;
+    addTags(keyValueMap: {
+        [key: string]: any;
+    }): this;
+    /**
+     *
+     * Logging "info" type of message
+     *
+     * @param {string} action - The action that is being logged.
+     * @param {ILogData} logData - ILogData = defaultLogData
+     * @param {LogSpan} [context] - This is the context of the log. It's used to group logs together.
+     * @returns A Logger object
+     */
     info(action: string, logData?: ILogData, context?: LogSpan): Logger;
+    /**
+     *
+     * Log "error" message
+     *
+     * The first argument is a union type, which means it can be a string or an error. If it's a string, we use it as the
+     * action. If it's an error, we use the default action and use the first argument as the error
+     * @param {string | Error | unknown} actionOrError - This is the action that you want to log. It can be a string or an
+     * error. If it's an error, the action will be set to 'error' and the error will be logged.
+     * @param {ILogData} logData - ILogData = defaultLogData
+     * @param {LogSpan} [context] - LogSpan - This is the context of the log. It's used to group logs together.
+     * @returns A Logger object
+     */
     error(actionOrError: string | Error | unknown, logData?: ILogData, context?: LogSpan): Logger;
     /**
      * logging db queries (only sequelize)
@@ -121,5 +146,17 @@ export default class Logger {
      * modifies original value.
      */
     static replaceStreamRecursive(argument: unknown, depth?: number): unknown;
+    /**
+     * Writes to the console and to the tracer
+     * @param {string} action - The action that is being logged.
+     * @param {ILogData} logData - ILogData = defaultLogData
+     * @param context - The context object that is passed to the logger.
+     * @returns The Logger instance.
+     */
+    private write;
+    /**
+     * Format & Log output to the console If the config says so
+     */
+    private consoleWrite;
 }
 export {};

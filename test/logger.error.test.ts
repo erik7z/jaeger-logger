@@ -20,7 +20,7 @@ describe('Logger.error', () => {
     const logger = new Logger('error-logger', {
       config: { writeToConsole: false, tracerConfig: { useTracer: false } },
     });
-    const loggerSpy = jest.spyOn(logger, 'write');
+    const loggerSpy = jest.spyOn(logger as any, 'write');
 
     const error = new Error('Oh crap!');
     logger.error(error, { err: 'err' });

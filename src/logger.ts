@@ -63,8 +63,8 @@ export const LOGGER = Symbol('LOGGER');
 
 export default class Logger {
   public readonly type = LOGGER;
-  public readonly tracer: Tracer | undefined;
-  public readonly context: LogSpan | undefined;
+  private readonly tracer: Tracer | undefined;
+  private readonly context: LogSpan | undefined;
   public readonly config: ILoggerConfig & ILoggerRequiredConfig;
   public isToCloseContext = true;
 
@@ -99,48 +99,45 @@ export default class Logger {
     }
   }
 
-  public write(action: string, logData: ILogData = defaultLogData, context = this.context): Logger {
-    const { type, message, data, err, queNumber } = logData;
-    const details = `(${this.serviceName}):${queNumber || ''}: ${action || ''}`;
-    this.consoleWrite(type ?? 'error', message ?? '', details, data, err);
-
-    if (context && this.tracer) {
-      this.tracer.write(action, logData, context);
+  /**
+   * Proxying 'Tracer.Span.AddTags' method
+   * It adds tags to the span.
+   * @param keyValueMap - { [key: string]: any }
+   * @returns The current instance of the class.
+   */
+  public addTags(keyValueMap: { [key: string]: any }): this {
+    if (this.context) {
+      this.context.addTags(keyValueMap);
     }
+
     return this;
   }
 
   /**
-   * Format & Log output to the console If the config says so
+   *
+   * Logging "info" type of message
+   *
+   * @param {string} action - The action that is being logged.
+   * @param {ILogData} logData - ILogData = defaultLogData
+   * @param {LogSpan} [context] - This is the context of the log. It's used to group logs together.
+   * @returns A Logger object
    */
-  private consoleWrite(
-    type: 'error' | 'info',
-    message: string,
-    details: string,
-    data: ILogData['data'],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    error: any,
-  ): void {
-    if (!this.config.writeToConsole) return;
-
-    let color = '\u001B[33m%s\u001B[0m : \u001B[36m%s\u001B[0m';
-    if (type === 'info') {
-      console.log(color, details, message || '');
-    } else {
-      color = '\u001B[31m%s\u001B[0m';
-      details = '';
-      console.error(color, details, message || '', error);
-    }
-    if (data) {
-      data = Logger.simplifyArgs(data, this.config.excludeClasses);
-      console.dir(data, { colors: true, depth: this.config.consoleDepth });
-    }
-  }
-
   public info(action: string, logData: ILogData = defaultLogData, context?: LogSpan): Logger {
     return this.write(action, { ...logData, type: 'info' }, context);
   }
 
+  /**
+   *
+   * Log "error" message
+   *
+   * The first argument is a union type, which means it can be a string or an error. If it's a string, we use it as the
+   * action. If it's an error, we use the default action and use the first argument as the error
+   * @param {string | Error | unknown} actionOrError - This is the action that you want to log. It can be a string or an
+   * error. If it's an error, the action will be set to 'error' and the error will be logged.
+   * @param {ILogData} logData - ILogData = defaultLogData
+   * @param {LogSpan} [context] - LogSpan - This is the context of the log. It's used to group logs together.
+   * @returns A Logger object
+   */
   public error(actionOrError: string | Error | unknown, logData: ILogData = defaultLogData, context?: LogSpan): Logger {
     let action = 'error';
     if (typeof actionOrError === 'string') action = actionOrError;
@@ -352,5 +349,50 @@ export default class Logger {
     }
 
     return argument;
+  }
+
+  /**
+   * Writes to the console and to the tracer
+   * @param {string} action - The action that is being logged.
+   * @param {ILogData} logData - ILogData = defaultLogData
+   * @param context - The context object that is passed to the logger.
+   * @returns The Logger instance.
+   */
+  private write(action: string, logData: ILogData = defaultLogData, context = this.context): Logger {
+    const { type, message, data, err, queNumber } = logData;
+    const details = `(${this.serviceName}):${queNumber || ''}: ${action || ''}`;
+    this.consoleWrite(type ?? 'error', message ?? '', details, data, err);
+
+    if (context && this.tracer) {
+      this.tracer.write(action, logData, context);
+    }
+    return this;
+  }
+
+  /**
+   * Format & Log output to the console If the config says so
+   */
+  private consoleWrite(
+    type: 'error' | 'info',
+    message: string,
+    details: string,
+    data: ILogData['data'],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error: any,
+  ): void {
+    if (!this.config.writeToConsole) return;
+
+    let color = '\u001B[33m%s\u001B[0m : \u001B[36m%s\u001B[0m';
+    if (type === 'info') {
+      console.log(color, details, message || '');
+    } else {
+      color = '\u001B[31m%s\u001B[0m';
+      details = '';
+      console.error(color, details, message || '', error);
+    }
+    if (data) {
+      data = Logger.simplifyArgs(data, this.config.excludeClasses);
+      console.dir(data, { colors: true, depth: this.config.consoleDepth });
+    }
   }
 }
