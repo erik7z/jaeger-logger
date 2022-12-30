@@ -64,7 +64,7 @@ export const LOGGER = Symbol('LOGGER');
 export default class Logger {
   public readonly type = LOGGER;
   private readonly tracer: Tracer | undefined;
-  private readonly context: LogSpan | undefined;
+  private readonly _context: LogSpan | undefined;
   public readonly config: ILoggerConfig & ILoggerRequiredConfig;
   public isToCloseContext = true;
 
@@ -79,7 +79,7 @@ export default class Logger {
     // TODO: simplify newcontext/subcontext
     if (this.tracer && (parentContext || createNewContext)) {
       // create new context or create subcontext if parent context provided
-      this.context = this.tracer.getSubContext(serviceName, parentContext);
+      this._context = this.tracer.getSubContext(serviceName, parentContext);
     }
   }
 
@@ -111,6 +111,10 @@ export default class Logger {
     }
 
     return this;
+  }
+
+  public get context() {
+    return this._context;
   }
 
   /**

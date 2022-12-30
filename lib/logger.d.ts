@@ -44,7 +44,7 @@ export default class Logger {
     readonly serviceName: string;
     readonly type: symbol;
     private readonly tracer;
-    private readonly context;
+    private readonly _context;
     readonly config: ILoggerConfig & ILoggerRequiredConfig;
     isToCloseContext: boolean;
     constructor(serviceName: string, options?: ILoggerOptions);
@@ -62,6 +62,7 @@ export default class Logger {
     addTags(keyValueMap: {
         [key: string]: any;
     }): this;
+    get context(): opentracing.Span | undefined;
     /**
      *
      * Logging "info" type of message
