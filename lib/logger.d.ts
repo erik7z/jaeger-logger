@@ -52,6 +52,9 @@ export default class Logger {
      * Every logger context should be closed at the end, otherwise spans are not saved.
      */
     finish(): void;
+    /**
+     * It closes the tracer if it exists
+     */
     closeTracer(): void;
     /**
      * Proxying 'Tracer.Span.AddTags' method
@@ -62,9 +65,12 @@ export default class Logger {
     addTags(keyValueMap: {
         [key: string]: any;
     }): this;
-    get context(): opentracing.Span | undefined;
     /**
-     *
+     * It returns the value of the private variable _context.
+     * @returns The context property is being returned.
+     */
+    get context(): LogSpan | undefined;
+    /**
      * Logging "info" type of message
      *
      * @param {string} action - The action that is being logged.
@@ -74,8 +80,7 @@ export default class Logger {
      */
     info(action: string, logData?: ILogData, context?: LogSpan): Logger;
     /**
-     *
-     * Log "error" message
+     * Logging "error" message
      *
      * The first argument is a union type, which means it can be a string or an error. If it's a string, we use it as the
      * action. If it's an error, we use the default action and use the first argument as the error

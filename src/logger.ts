@@ -93,6 +93,9 @@ export default class Logger {
     }
   }
 
+  /**
+   * It closes the tracer if it exists
+   */
   public closeTracer(): void {
     if (this.tracer) {
       this.tracer.client.close();
@@ -113,12 +116,15 @@ export default class Logger {
     return this;
   }
 
-  public get context() {
+  /**
+   * It returns the value of the private variable _context.
+   * @returns The context property is being returned.
+   */
+  public get context(): LogSpan | undefined {
     return this._context;
   }
 
   /**
-   *
    * Logging "info" type of message
    *
    * @param {string} action - The action that is being logged.
@@ -131,8 +137,7 @@ export default class Logger {
   }
 
   /**
-   *
-   * Log "error" message
+   * Logging "error" message
    *
    * The first argument is a union type, which means it can be a string or an error. If it's a string, we use it as the
    * action. If it's an error, we use the default action and use the first argument as the error
