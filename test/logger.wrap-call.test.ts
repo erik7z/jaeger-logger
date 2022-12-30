@@ -7,9 +7,9 @@ describe('Logger.wrapCall', () => {
   });
   afterAll(() => {
     const logger = new Logger('wrapCall-logger', {
-      config: { writeToConsole: true, tracerConfig: { useTracer: false } },
+      config: { writeToConsole: true, tracerConfig: { useTracer: true } },
     });
-    logger.tracer.client.close();
+    logger.closeTracer();
   });
   test('Should wrap function call request and response in sub log', async () => {
     const logger = new Logger('wrapCall-logger', {

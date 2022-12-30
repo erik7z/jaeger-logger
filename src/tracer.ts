@@ -23,6 +23,7 @@ export const defaultConfig: ITracerConfig = {
   excludeClasses: ['Transaction', 'Logger'],
 };
 
+// TODO: re-factor tracer creation (when using singleton connection is not always closing), new configs not passed etc.
 let tracer: Tracer;
 /**
  * Singleton for returning instance of the Tracer class.

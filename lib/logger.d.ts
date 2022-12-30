@@ -43,7 +43,7 @@ export declare const LOGGER: unique symbol;
 export default class Logger {
     readonly serviceName: string;
     readonly type: symbol;
-    readonly tracer: Tracer;
+    readonly tracer: Tracer | undefined;
     readonly context: LogSpan | undefined;
     readonly config: ILoggerConfig & ILoggerRequiredConfig;
     isToCloseContext: boolean;
@@ -52,6 +52,7 @@ export default class Logger {
      * Every logger context should be closed at the end, otherwise spans are not saved.
      */
     finish(): void;
+    closeTracer(): void;
     write(action: string, logData?: ILogData, context?: opentracing.Span | undefined): Logger;
     /**
      * Format & Log output to the console If the config says so

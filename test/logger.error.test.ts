@@ -2,8 +2,9 @@ import Logger from '../src/logger';
 
 describe('Logger.error', () => {
   afterAll(() => {
-    const logger = new Logger('error-logger', { config: { writeToConsole: true, tracerConfig: { useTracer: false } } });
-    logger.tracer.client.close();
+    const logger = new Logger('error-logger', { config: { writeToConsole: true, tracerConfig: { useTracer: true } } });
+
+    logger.closeTracer();
   });
   test('Should use console.error if logging to console enabled', async () => {
     const logger = new Logger('error-logger', { config: { writeToConsole: true, tracerConfig: { useTracer: false } } });

@@ -63,7 +63,7 @@ export const LOGGER = Symbol('LOGGER');
 
 export default class Logger {
   public readonly type = LOGGER;
-  public readonly tracer: Tracer;
+  public readonly tracer: Tracer | undefined;
   public readonly context: LogSpan | undefined;
   public readonly config: ILoggerConfig & ILoggerRequiredConfig;
   public isToCloseContext = true;
@@ -73,19 +73,30 @@ export default class Logger {
     const { config: optionsConfig = {}, parentContext, createNewContext } = options;
     this.config = deepmerge(defaultConfig, optionsConfig);
 
-    this.tracer = getDefaultTracer(serviceName, this.config.tracerConfig);
+    if (this.config?.tracerConfig?.useTracer) {
+      this.tracer = getDefaultTracer(serviceName, this.config.tracerConfig);
+    }
     // TODO: simplify newcontext/subcontext
-    if (parentContext || createNewContext) {
+    if (this.tracer && (parentContext || createNewContext)) {
       // create new context or create subcontext if parent context provided
       this.context = this.tracer.getSubContext(serviceName, parentContext);
     }
   }
 
+  // TODO: refactor to automatically close all subcontexts
   /**
    * Every logger context should be closed at the end, otherwise spans are not saved.
    */
   public finish(): void {
-    if (this.context) this.context.finish();
+    if (this.context) {
+      this.context.finish();
+    }
+  }
+
+  public closeTracer(): void {
+    if (this.tracer) {
+      this.tracer.client.close();
+    }
   }
 
   public write(action: string, logData: ILogData = defaultLogData, context = this.context): Logger {
@@ -93,7 +104,7 @@ export default class Logger {
     const details = `(${this.serviceName}):${queNumber || ''}: ${action || ''}`;
     this.consoleWrite(type ?? 'error', message ?? '', details, data, err);
 
-    if (context && this.config?.tracerConfig?.useTracer) {
+    if (context && this.tracer) {
       this.tracer.write(action, logData, context);
     }
     return this;
@@ -232,7 +243,7 @@ export default class Logger {
    */
   public extract(): IUberTrace {
     const uberTrace = {};
-    if (this.context) {
+    if (this.context && this.tracer) {
       this.tracer.client.inject(this.context, opentracing.FORMAT_TEXT_MAP, uberTrace);
     }
     return uberTrace as IUberTrace;
@@ -245,7 +256,10 @@ export default class Logger {
    * @param trace
    */
   public inject(contextName: string, trace: IUberTrace): Logger {
-    const span_context = this.tracer.client.extract(opentracing.FORMAT_TEXT_MAP, trace);
+    let span_context;
+    if (this.tracer) {
+      span_context = this.tracer.client.extract(opentracing.FORMAT_TEXT_MAP, trace);
+    }
     return this.getSubLogger(contextName, span_context as unknown as opentracing.Span);
   }
 
