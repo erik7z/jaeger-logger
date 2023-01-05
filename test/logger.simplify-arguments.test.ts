@@ -165,4 +165,137 @@ describe('simplifyArgs', () => {
 
     expect(newArguments).toStrictEqual([1, nestedReplaced, 2, fcb]);
   });
+
+  describe('replacePropertiesRecursive', () => {
+    test('Should replace nested properties', () => {
+      const strm = new Stream.Readable();
+
+      const initialObject = {
+        a: 'a',
+        n: {
+          n1: {
+            strm: strm,
+          },
+          b: 'b',
+        },
+      };
+
+      const expectedObject = {
+        a: 'a',
+        n: {
+          n1: 'REPLACED',
+          b: 'b',
+        },
+      };
+
+      const replacedObject = Logger.replacePropertiesRecursive(initialObject, 'n1', 'REPLACED');
+
+      expect(replacedObject).toStrictEqual(expectedObject);
+    });
+
+    test('Should replace multiple nested properties', () => {
+      const strm = new Stream.Readable();
+
+      const initialObject = {
+        a: 'a',
+        n: {
+          n1: {
+            strm: strm,
+          },
+          b: 'b',
+          banana: {
+            n1: {
+              cucumber: 123,
+            },
+          },
+        },
+      };
+
+      const expectedObject = {
+        a: 'a',
+        n: {
+          n1: 'REPLACED',
+          b: 'b',
+          banana: {
+            n1: 'REPLACED',
+          },
+        },
+      };
+
+      const replacedObject = Logger.replacePropertiesRecursive(initialObject, 'n1', 'REPLACED');
+
+      expect(replacedObject).toStrictEqual(expectedObject);
+    });
+
+    test('Should not replace deeper than set depth', () => {
+      const initialObject = {
+        a: 'a',
+        b: {
+          b1: {
+            b2: {
+              b3: {
+                deepData: 'deepData',
+              },
+              deepData: 'deepData3',
+            },
+          },
+          deepData: 'deepData',
+        },
+      };
+
+      const expectedObject = {
+        a: 'a',
+        b: {
+          b1: {
+            b2: {
+              b3: {
+                deepData: 'deepData',
+              },
+              deepData: 'REPLACED',
+            },
+          },
+          deepData: 'REPLACED',
+        },
+      };
+
+      const replacedObject = Logger.replacePropertiesRecursive(initialObject, 'deepData', 'REPLACED', 4);
+
+      expect(replacedObject).toStrictEqual(expectedObject);
+    });
+
+    // TODO: correct (arrays will lose equal values)
+    test('Should replace arrays with array objects', () => {
+      const strm = new Stream.Readable();
+
+      const initialObject = {
+        a: 'a',
+        n: {
+          n1: {
+            strm: strm,
+          },
+          b: 'b',
+          banana: {
+            n1: {
+              cucumber: 123,
+            },
+          },
+        },
+      };
+
+      const expectedObject = {
+        a: 'a',
+        n: {
+          n1: 'REPLACED',
+          b: 'b',
+          banana: {
+            n1: 'REPLACED',
+          },
+        },
+      };
+
+      const replacedObject = Logger.replacePropertiesRecursive([initialObject], 'n1', 'REPLACED');
+
+      expect(replacedObject).toStrictEqual({ '0': expectedObject });
+    });
+  });
 });

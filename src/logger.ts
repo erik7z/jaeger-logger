@@ -361,6 +361,32 @@ export default class Logger {
   }
 
   /**
+   * Useful for masking some values.
+   *
+   * It takes an object, a key to search for, a new value to replace the key with, and a depth to search. It returns a new
+   * object with the key replaced with the new value
+   * @param {any} oldObject - The object you want to replace the properties in.
+   * @param {string} searchKey - The key to search for in the object
+   * @param {string} newValue - The value you want to replace the searchKey with.
+   * @param [depth=5] - The depth of search for the key.
+   * @returns A new object with the same properties as the old object, but with the value of the property with the key
+   * `searchKey` replaced with `newValue`.
+   */
+  public static replacePropertiesRecursive(oldObject: any, searchKey: string, newValue: string, depth = 5): unknown {
+    if (depth <= 0 || _.isObject(oldObject) !== true) return oldObject;
+
+    const newObject: any = {};
+    for (const key in oldObject) {
+      if (key === searchKey) {
+        newObject[key] = newValue;
+      } else {
+        newObject[key] = Logger.replacePropertiesRecursive(oldObject[key], searchKey, newValue, depth - 1);
+      }
+    }
+    return newObject;
+  }
+
+  /**
    * Writes to the console and to the tracer
    * @param {string} action - The action that is being logged.
    * @param {ILogData} logData - ILogData = defaultLogData
