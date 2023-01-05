@@ -1,15 +1,15 @@
 {
-  "author": "erik7z_digis",
+  "author": "erik7z",
   "bugs": {
-    "url": "https://bitbucket.org/erik7z_digis/glb-logger/issues"
+    "url": "https://github.com/erik7z/jaeger-logger/issues"
   },
-  "description": "Logger library for GemlightBox projects",
-  "homepage": "https://bitbucket.org/erik7z_digis/glb-logger#readme",
+  "description": "Logging / tracing library for jaeger client",
+  "homepage": "https://github.com/erik7z/jaeger-logger/glb-logger#readme",
   "license": "ISC",
-  "name": "@gemlightbox/logger",
+  "name": "jaeger-logger",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/erik7z_digis/glb-logger.git"
+    "url": "git@github.com:erik7z/jaeger-logger.git"
   },
   "scripts": {
     "prepublishOnly": "npm test && npm run lint && npm run format && npm run build",
@@ -30,7 +30,9 @@
     "registry": "https://registry.npmjs.org"
   },
   "keywords": [
-    "gemlightbox",
+    "tracing",
+    "opentracing",
+    "jaeger",
     "logger",
     "tracer"
   ],

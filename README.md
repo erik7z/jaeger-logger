@@ -1,6 +1,7 @@
-# [GLB Logger](https://www.npmjs.com/package/@gemlightbox/logger)
+# Jaeger Logger
 
-Logging / tracing library.
+Logging / tracing library for [JAEGER](https://www.jaegertracing.io/docs) client. 
+Helps to create beautiful nested context related logs.
 
 - Outputs formatted logs to console.
 - Can be used together with in-built tracer for sending log spans to [JAEGER](https://www.jaegertracing.io/docs)
