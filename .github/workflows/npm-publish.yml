@@ -1,17 +1,19 @@
-name: Publishing to NPM 🚀
+name: Publishing to NPM
 
 on: [push]
 
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
+    environment: 'all_branches'
+    env:
+      NPM_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: 18.4.0
           registry-url: https://registry.npmjs.org/
+          always-auth: true
       - run: npm install
       - run: npm publish
-        env:
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
