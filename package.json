@@ -6,7 +6,7 @@
   "description": "Logging / tracing library for jaeger client",
   "homepage": "https://github.com/erik7z/jaeger-logger#readme",
   "license": "ISC",
-  "name": "jaeger-logger",
+  "name": "jaeger-logging",
   "repository": {
     "type": "git",
     "url": "git@github.com:erik7z/jaeger-logger.git"
