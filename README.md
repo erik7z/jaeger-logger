@@ -6,9 +6,19 @@ Helps to create beautiful nested context related logs.
 - Outputs formatted logs to console.
 - Can be used together with in-built tracer for sending log spans to [JAEGER](https://www.jaegertracing.io/docs)
 
+# Installation 
+
+```shell
+npm i jaeger-logging # and its ready to use =)
+```
+
+You can find this package on NPM: [jaeger-logging](https://www.npmjs.com/package/jaeger-logging)
+
 ## Basic Usage
 
 ```ts
+import { Logger } from 'jaeger-logging'
+
 const logger = new Logger('LOG_NAME')
 
 // Add info log:
@@ -21,8 +31,7 @@ logger.error('error', { action: 'action name', err: e }) // e - Error instance
 logger.finish()
 ```
 
-## Usage with tracer
-
+## Usage with tracer ([read more](https://www.jaegertracing.io/docs))
 ```ts
 const logger = new Logger('traced_logs', {
   config: {
