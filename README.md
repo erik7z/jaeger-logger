@@ -1,4 +1,5 @@
 # Jaeger Logger
+> You can find this package on NPM: [jaeger-logging](https://www.npmjs.com/package/jaeger-logging)
 
 Logging / tracing library for [JAEGER](https://www.jaegertracing.io/docs) client. 
 Helps to create beautiful nested context related logs.
@@ -11,9 +12,6 @@ Helps to create beautiful nested context related logs.
 ```shell
 npm i jaeger-logging # and its ready to use =)
 ```
-
-> You can find this package on NPM: [jaeger-logging](https://www.npmjs.com/package/jaeger-logging)
-
 
 ## Basic Usage
 
