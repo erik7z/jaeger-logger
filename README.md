@@ -12,7 +12,8 @@ Helps to create beautiful nested context related logs.
 npm i jaeger-logging # and its ready to use =)
 ```
 
-You can find this package on NPM: [jaeger-logging](https://www.npmjs.com/package/jaeger-logging)
+> You can find this package on NPM: [jaeger-logging](https://www.npmjs.com/package/jaeger-logging)
+
 
 ## Basic Usage
 
