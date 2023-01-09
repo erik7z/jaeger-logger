@@ -1,6 +1,9 @@
 name: Publishing to NPM
 
-on: [push]
+on:
+  push:
+    branches:
+      - publish
 
 jobs:
   publish-npm:
