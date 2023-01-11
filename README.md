@@ -1,22 +1,23 @@
 # Jaeger Logger
-> You can find this package on NPM: [jaeger-logging](https://www.npmjs.com/package/jaeger-logging)
+> You can find this package on NPM: [jaeger-logger](https://www.npmjs.com/package/jaeger-logger)
 
 Logging / tracing library for [JAEGER](https://www.jaegertracing.io/docs) client. 
 Helps to create beautiful nested context related logs.
 
 - Outputs formatted logs to console.
 - Can be used together with in-built tracer for sending log spans to [JAEGER](https://www.jaegertracing.io/docs)
+> [Read more about tracing in our small guide (russian)](./guides/jaeger/ru/jaeger-tracer.md)
 
 # Installation 
 
 ```shell
-npm i jaeger-logging # and its ready to use =)
+npm i jaeger-logger # and its ready to use =)
 ```
 
 ## Basic Usage
 
 ```ts
-import { Logger } from 'jaeger-logging'
+import { Logger } from 'jaeger-logger'
 
 const logger = new Logger('LOG_NAME')
 
