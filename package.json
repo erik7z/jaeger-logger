@@ -6,7 +6,7 @@
   "description": "Logging / tracing library for jaeger client",
   "homepage": "https://github.com/erik7z/jaeger-logger#readme",
   "license": "ISC",
-  "name": "jaeger-logging",
+  "name": "jaeger-logger",
   "repository": {
     "type": "git",
     "url": "git@github.com:erik7z/jaeger-logger.git"
@@ -25,7 +25,7 @@
     "lib",
     "src"
   ],
-  "version": "1.0.4",
+  "version": "1.0.7",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
