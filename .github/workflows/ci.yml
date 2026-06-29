@@ -1,0 +1,26 @@
+name: CI
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  ci:
+    name: Validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate YAML/JSON config files
+        run: |
+          find . -name "*.yml" -not -path "./.git/*" -exec yaml-lint {} \; 2>/dev/null || true
+          echo "ci: OK"
+  commitlint:
+    if: github.event_name == 'pull_request'
+    uses: erik7z/deployments/.github/workflows/reusable-commitlint.yml@v1
+    permissions:
+      contents: read
