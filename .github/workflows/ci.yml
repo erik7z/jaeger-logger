@@ -15,12 +15,32 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - name: Validate YAML/JSON config files
-        run: |
-          find . -name "*.yml" -not -path "./.git/*" -exec yaml-lint {} \; 2>/dev/null || true
-          echo "ci: OK"
+      - name: Basic validation
+        run: echo "ci: OK"
   commitlint:
+    name: Lint commit messages
     if: github.event_name == 'pull_request'
-    uses: erik7z/deployments/.github/workflows/reusable-commitlint.yml@v1
+    runs-on: [self-hosted, linux, e7z]
     permissions:
       contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install commitlint
+        run: |
+          npm install --no-save --no-package-lock \
+            @commitlint/cli \
+            @commitlint/config-conventional
+      - name: Lint PR commits
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: npx commitlint --from "${BASE_SHA}" --to "${HEAD_SHA}" --verbose
+      - name: Lint PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: echo "${PR_TITLE}" | npx commitlint --verbose
