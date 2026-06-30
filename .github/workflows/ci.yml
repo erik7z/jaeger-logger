@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Basic validation
-        run: echo "ci: OK"
+        run: echo "ci OK"
   commitlint:
     name: Lint commit messages
     if: github.event_name == 'pull_request'
