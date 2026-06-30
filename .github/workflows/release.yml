@@ -7,10 +7,29 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
-    uses: erik7z/deployments/.github/workflows/reusable-semantic-release.yml@v1
-    secrets:
-      GH_PAT: ${{ secrets.GH_PAT }}
+    runs-on: [self-hosted, linux, e7z]
     permissions:
       contents: write
       issues: write
       pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install semantic-release
+        run: |
+          npm install --no-save --no-package-lock \
+            semantic-release@^23 \
+            @semantic-release/changelog \
+            @semantic-release/npm \
+            @semantic-release/git \
+            @semantic-release/github \
+            conventional-changelog-conventionalcommits
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
