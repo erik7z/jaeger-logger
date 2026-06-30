@@ -22,12 +22,12 @@ jobs:
           node-version: '20'
       - name: Install semantic-release
         run: |
-          npm install --no-save --no-package-lock --legacy-peer-deps \
-            semantic-release@^23 \
+          npm install --no-save --no-package-lock \
+            semantic-release@^24 \
             @semantic-release/changelog \
             @semantic-release/npm \
             @semantic-release/git \
-            @semantic-release/github \
+            @semantic-release/github@^11 \
             conventional-changelog-conventionalcommits
       - name: Run semantic-release
         env:
